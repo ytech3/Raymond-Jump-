@@ -1578,5 +1578,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Final console log
     console.log('Game script finished loading');
-});
-
+}})
