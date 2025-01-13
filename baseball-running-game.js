@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const GAP_MIN_SIZE = 150;
     const OBSTACLE_SPEED = -200;
     let gapSize = GAP_SIZE_INITIAL;
+    
 
     // New: Tube and Logo Configuration
     const TUBE_CONFIG = {
@@ -290,6 +291,816 @@ document.addEventListener('DOMContentLoaded', function() {
         return mascot;
     }
 
+    function createGameModeButtons() {
+        console.log("Game mode buttons created");
+        let allStarButton = this.add.text(300, 510, 'ALL STAR', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fill: '#000000',  // Changed to black text
+            backgroundColor: '#F5D130',  // Changed to Rays Yellow
+            padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive();
+        
+        let hallOfFameButton = this.add.text(500, 510, 'HALL OF FAME', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fill: '#000000',  // Changed to black text
+            backgroundColor: '#F5D130',  // Changed to Rays Yellow
+            padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive();
+
+        allStarButton.on('pointerdown', () => showOptInScreen.call(this, 'ALL STAR'));
+        hallOfFameButton.on('pointerdown', () => showOptInScreen.call(this, 'HALL OF FAME'));
+    }
+
+    function createOptInScreen() {
+        optInScreen = this.add.container(400, 300);
+        optInScreen.setVisible(false);
+
+        let bg = this.add.rectangle(0, 0, 800, 600, 0x000000, 0.8);
+        
+        let title = this.add.text(0, -150, 'READY TO PLAY?', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            fill: '#000',
+            align: 'center',
+            backgroundColor: '#F5D130',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5);
+
+        // Create checkbox
+        let checkbox = this.add.rectangle(-150, 0, 30, 30, 0xF5D130);
+        checkbox.setStrokeStyle(2, 0x000000);
+        checkbox.setOrigin(0.5);
+        checkbox.setInteractive();
+        
+        let checkmark = this.add.text(-150, 0, '✓', { 
+            fontSize: '24px', 
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            fill: '#000000' 
+        }).setOrigin(0.5);
+        checkmark.setVisible(false);
+
+        let checkboxText = this.add.text(-120, 0, 'Player agrees to the game rules,\nprivacy policies, terms and conditions', {
+            fontSize: '16px',
+            fontFamily: 'comic sans ms',
+            fill: '#000',
+            align: 'left',
+            backgroundColor: '#F5D130',
+            padding: { x: 10, y: 5 },
+            wordWrap: { width: 400 }
+        }).setOrigin(0, 0.5);
+
+        checkbox.on('pointerdown', function() {
+            checkmark.setVisible(!checkmark.visible);
+        });
+
+        let playButton = this.add.text(0, 100, 'PLAY!', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            fill: '#000',
+            backgroundColor: '#F5D130',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        optInScreen.add([bg, title, checkbox, checkmark, checkboxText, playButton]);
+
+        playButton.on('pointerdown', () => {
+            if (checkmark.visible) {
+                userOktaId = generateMockOktaId();
+                console.log('User OKTA ID:', userOktaId);
+                optInScreen.setVisible(false);
+                startGame.call(this);
+            } else {
+                let errorText = this.add.text(0, 150, 'Please agree to the game policies and rules', {
+                    fontSize: '16px',
+                    fontFamily: 'comic sans ms',
+                    fill: '#FF0000',
+                    backgroundColor: '#F5D130',
+                    padding: { x: 10, y: 5 }
+                }).setOrigin(0.5);
+                optInScreen.add(errorText);
+                this.time.delayedCall(2000, () => errorText.destroy());
+            }
+        });
+    }
+
+    function showOptInScreen(mode) {
+        gameMode = mode;
+        optInScreen.setVisible(true);
+        howToPlayText.setVisible(false);
+        
+        // Hide mode selection buttons
+        this.children.getAll().forEach(child => {
+            if (child.text === 'ALL STAR' || child.text === 'HALL OF FAME') {
+                child.setVisible(false);
+            }
+        });
+    }
+
+    function generateMockOktaId() {
+        return 'OKTA_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function startGame() {
+        console.log('Start Game function called');
+        
+        // Reset game state
+        score = 0;
+        totalWins = 0;
+        winsText.setText('WINS: 0/162');
+        currentObstacleIndex = 0;
+        lastTubeTime = 0;
+        
+        // Apply mode-specific settings
+        const modeSettings = GAME_MODES[gameMode];
+        gameSpeed = modeSettings.initialSpeed;
+        gapSize = modeSettings.initialGapSize;
+        
+        // Reset and show player
+        player.setPosition(MASCOT_START_X, MASCOT_START_Y);
+        player.setAngle(0);
+        player.setVisible(true);
+        player.body.setGravityY(GRAVITY);
+        
+        // Show UI elements but keep score hidden until gameplay starts
+        winsText.setVisible(true);
+        scoreText.setVisible(false);
+        
+        // Set background
+        regularBackground.setVisible(true);
+        
+        // Create and show Get Ready screen
+        createGetReadyScreen.call(this);
+        
+        // Keep physics paused until player starts
+        this.physics.pause();
+    }
+    
+    function createGetReadyScreen() {
+    
+        // Create container for Get Ready elements
+        getReadyContainer = this.add.container(400, 300);
+        
+        // Create semi-transparent background
+        const overlay = this.add.rectangle(0, 0, 800, 600, 0x000000, 0.3);
+        
+        // Create Get Ready text with pixel art style
+        const getReadyText = this.add.text(0, -80, 'GET READY', {
+            fontSize: '48px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            fill: '#F5D130',
+            stroke: '#000000',
+            strokeThickness: 8,
+            align: 'center'
+        }).setOrigin(0.5);
+        
+        // Create countdown text
+        const countdownText = this.add.text(0, -20, '3', {
+            fontSize: '64px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            fill: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 6,
+            align: 'center'
+        }).setOrigin(0.5);
+        
+        // Create tap/space instruction with animation
+        tapInstruction = this.add.text(0, 40, 'TAP OR PRESS SPACE', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fill: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(0.5);
+        
+        // Add tap icon
+        const tapIcon = this.add.text(0, 100, '👆', {
+            fontSize: '40px'
+        }).setOrigin(0.5);
+        
+        // Add elements to container
+        getReadyContainer.add([overlay, getReadyText, countdownText, tapInstruction, tapIcon]);
+        
+        // Add pulsing animation to tap instruction
+        this.tweens.add({
+            targets: tapInstruction,
+            scale: { from: 1, to: 1.1 },
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
+        
+        // Add bouncing animation to tap icon
+        this.tweens.add({
+            targets: tapIcon,
+            y: { from: tapIcon.y, to: tapIcon.y + 20 },
+            duration: 600,
+            yoyo: true,
+            repeat: -1
+        });
+        
+        getReadyVisible = true;
+    
+        // Create a flag to track if game has started
+        let hasGameStarted = false;
+        let countdownActive = true;
+        
+        // Start game function
+        const startGame = () => {
+            if (hasGameStarted) return;
+            hasGameStarted = true;
+            countdownActive = false;
+    
+            // Fade out Get Ready screen
+            this.tweens.add({
+                targets: getReadyContainer,
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                    getReadyContainer.destroy();
+                    
+                    // Start actual gameplay
+                    gameActive = true;
+                    gameStarted = true;
+                    scoreText.setVisible(true);
+                    this.physics.resume();
+                }
+            });
+        };
+    
+        // Set up countdown sequence
+        let count = 3;
+        
+        const updateCountdown = () => {
+            if (!countdownActive) return;
+            
+            // Scale animation for current number
+            this.tweens.add({
+                targets: countdownText,
+                scale: { from: 1.2, to: 1 },
+                duration: 300,
+                ease: 'Power2'
+            });
+    
+            if (count > 1) {
+                count--;
+                countdownText.setText(count.toString());
+                this.time.delayedCall(1000, updateCountdown);
+            } else {
+                countdownText.setText('START!');
+                this.tweens.add({
+                    targets: countdownText,
+                    scale: { from: 1.5, to: 1 },
+                    duration: 300,
+                    ease: 'Power2',
+                    onComplete: () => {
+                        if (countdownActive && !hasGameStarted) {
+                            startGame();
+                        }
+                    }
+                });
+            }
+        };
+    
+        // Delay adding input listeners until after a short delay
+        this.time.delayedCall(500, () => {
+            // Manual start handlers (for early start)
+            const manualStart = () => {
+                if (!hasGameStarted) {
+                    startGame();
+                }
+            };
+    
+            // Add input listeners
+            this.input.on('pointerdown', manualStart);
+            this.input.keyboard.on('keydown-SPACE', manualStart);
+        });
+    
+        // Start the countdown sequence
+        updateCountdown();
+    }
+
+    function gameOver() {
+        if (!gameActive || invisibilityActive) return;
+        
+        console.log('Game Over function called');
+        this.physics.pause();
+        gameActive = false;
+
+        // Clean up UI elements
+        scoreText.destroy();
+        winsText.setVisible(false);
+
+        // Deactivate any active power-ups
+        if (powerUpActive) {
+            deactivatePowerUp.call(this);
+        }
+        if (invisibilityActive) {
+            deactivatePizzaPowerUp.call(this);
+        }
+
+        // Generate gamertag if needed
+        if (!userGamertag) {
+            userGamertag = generateBaseballGamertag();
+        }
+
+        // Add game over animations
+        this.tweens.add({
+            targets: player,
+            x: player.x + 10,
+            duration: 100,
+            yoyo: true,
+            repeat: 5,
+            onComplete: () => {
+                this.tweens.add({
+                    targets: player,
+                    y: 800,
+                    angle: 360,
+                    duration: 1000,
+                    ease: 'Power1',
+                    onComplete: () => {
+                        player.destroy();
+                        
+                        // Clean up previous game over screen
+                        if (gameOverContainer) {
+                            gameOverContainer.destroy();
+                        }
+                        if (gameOverOverlay) {
+                            gameOverOverlay.destroy();
+                        }
+                        
+                        // Show new game over screen
+                        this.time.delayedCall(100, () => {
+                            createEnhancedGameOverScreen.call(this);
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    function updateLeaderboard(score) {
+        let leaderboard = gameMode === 'ALL STAR' ? allStarLeaderboard : hallOfFameLeaderboard;
+        leaderboard.push({ name: userGamertag, score: score, wins: totalWins });
+        leaderboard.sort((a, b) => b.score - a.score);
+        leaderboard = leaderboard.slice(0, 15);
+        console.log('Leaderboard updated:', { name: userGamertag, score: score, wins: totalWins });
+    }
+
+    function restartGame() {
+        try {
+            // Reset game state flags first
+            gameActive = false;
+            gameStarted = false;
+            getReadyVisible = false;
+            
+            // Get mode-specific settings
+            const modeSettings = GAME_MODES[gameMode];
+            
+            // Reset core game variables
+            score = 0;
+            totalWins = 0;
+            currentObstacleIndex = 0;
+            lastTubeTime = 0;
+            gameSpeed = modeSettings.initialSpeed;
+            gapSize = modeSettings.initialGapSize;
+            powerUpActive = false;
+            invisibilityActive = false;
+    
+            // Clean up all existing game elements
+            this.tweens.killAll(); // Stop all running tweens
+            
+            // Clear all game groups
+            if (tubes) tubes.clear(true, true);
+            if (logos) logos.clear(true, true);
+            if (stars) stars.clear(true, true);
+            if (clouds) clouds.clear(true, true);
+
+            // Clean up text elements
+            if (scoreText) scoreText.destroy();
+            if (winsText) winsText.destroy();
+            if (powerUpText) powerUpText.destroy();
+            if (invisibilityText) invisibilityText.destroy();
+            if (gameOverContainer) gameOverContainer.destroy();
+            if (gameOverOverlay) gameOverOverlay.destroy();
+            if (getReadyContainer) getReadyContainer.destroy();
+
+            // Clean up timers
+            if (powerUpTimer) powerUpTimer.remove();
+            if (invisibilityTimer) invisibilityTimer.remove();
+
+            // Reset player
+            if (player) player.destroy();
+            
+            // Recreate essential game elements
+            // Recreate wins text
+            winsText = this.add.text(790, 20, 'WINS: 0/162', {
+                fontSize: '20px',
+                fontFamily: 'comic sans ms',
+                fontStyle: 'bold',
+                fill: '#FFFFFF',
+                align: 'right'
+            });
+            winsText.setOrigin(1, 0);
+            winsText.setVisible(true);
+            winsText.setDepth(20);
+
+            // Recreate score text
+            scoreText = this.add.text(400, 30, 'SCORE: 0', { 
+                fontSize: '24px', 
+                fill: '#FFFFFF',
+                fontFamily: 'comic sans ms',
+                fontStyle: 'bold'
+            });
+            scoreText.setOrigin(0.5);
+            scoreText.setVisible(false);
+            scoreText.setDepth(20);
+
+            // Create new player
+            player = createMascot(this, MASCOT_START_X, MASCOT_START_Y);
+            this.physics.add.existing(player);
+            player.body.setSize(60, 60);
+            player.body.setCollideWorldBounds(true);
+            player.setDepth(10);
+            player.setAlpha(1);
+            player.setVisible(true);
+            player.setAngle(0);
+            player.body.setGravityY(GRAVITY);
+
+            // Reset null references
+            powerUpTimer = null;
+            invisibilityTimer = null;
+            powerUpText = null;
+            invisibilityText = null;
+            getReadyContainer = null;
+    
+            // Reset physics and collisions
+            setupPhysics.call(this);
+    
+            // Make sure physics is paused before showing Get Ready screen
+            this.physics.pause();
+    
+            // Small delay before showing Get Ready screen
+            this.time.delayedCall(100, () => {
+                createGetReadyScreen.call(this);
+            });
+    
+            console.log(`Game restarted in ${gameMode} mode with speed: ${gameSpeed} and gap size: ${gapSize}`);
+    
+        } catch (error) {
+            console.error('Critical error during game restart:', error);
+            
+            const errorText = this.add.text(400, 300, 'Error restarting game\nPlease refresh the page', {
+                fontSize: '24px',
+                fontFamily: 'comic sans ms',
+                fill: '#FF0000',
+                align: 'center'
+            }).setOrigin(0.5);
+            
+            setTimeout(() => window.location.reload(), 3000);
+        }
+    }
+
+    function createEnhancedGameOverScreen() {
+        // Create overlay
+        gameOverOverlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+        
+        // Create container
+        gameOverContainer = this.add.container(400, 300);
+        
+        // Create panel background
+        const panel = this.add.rectangle(0, 0, 400, 550, 0xFFFFFF, 1);
+        panel.setStrokeStyle(2, 0x092C5C);
+        
+        // Add header
+        const headerText = this.add.text(0, -240, 'GAME OVER', {
+            fontSize: '40px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+        
+        // Add trophy
+        const trophy = this.add.image(0, -190, 'trophy');
+        trophy.setScale(0.15);
+        
+        // Create stats section
+        const statsBackground = this.add.rectangle(0, -130, 350, 80, 0xF0F4F8);
+        
+        // Add score display
+        finalScoreText = this.add.text(-100, -150, 'FINAL SCORE', {
+            fontSize: '20px',
+            fontFamily: 'comic sans ms',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+        
+        const scoreValue = this.add.text(-100, -120, '0', {
+            fontSize: '32px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+        
+        // Animate score
+        this.tweens.addCounter({
+            from: 0,
+            to: score,
+            duration: 1500,
+            onUpdate: function (tween) {
+                scoreValue.setText(Math.floor(tween.getValue()));
+            }
+        });
+        
+        // Add wins display
+        totalWinsText = this.add.text(100, -150, 'TOTAL WINS', {
+            fontSize: '20px',
+            fontFamily: 'comic sans ms',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+        
+        const winsValue = this.add.text(100, -120, totalWins.toString(), {
+            fontSize: '32px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+        
+        // Add gamertag display
+        const gamertagBackground = this.add.rectangle(0, -60, 350, 50, 0xFFF9E6);
+        gamertagText = this.add.text(0, -60, userGamertag, {
+            fontSize: '28px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            color: '#092C5C'
+        }).setOrigin(0.5);
+
+        // Add medals based on score
+        const medalContainer = this.add.container(0, -10);
+        if (score >= 1000) {
+            const goldMedal = this.add.image(-60, 0, 'gold-medal').setScale(0.12);
+            medalContainer.add(goldMedal);
+        }
+        if (score >= 500) {
+            const silverMedal = this.add.image(0, 0, 'medal-silver').setScale(0.12);
+            medalContainer.add(silverMedal);
+        }
+        if (score >= 100) {
+            const bronzeMedal = this.add.image(60, 0, 'medal-bronze').setScale(0.12);
+            medalContainer.add(bronzeMedal);
+        }
+        
+        // Update and show leaderboard
+        updateLeaderboard(score);
+        const leaderboardBackground = this.add.rectangle(0, 120, 350, 200, 0xF5F5F5);
+        
+        const leaderboardTitle = this.add.text(0, 40, 'TOP SCORES', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            color: '#092C5C',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+    
+        // Create leaderboard entries
+        const leaderboardContainer = this.add.container(0, 0);
+        const currentLeaderboard = gameMode === 'ALL STAR' ? allStarLeaderboard : hallOfFameLeaderboard;
+        
+        if (currentLeaderboard.length > 0) {
+            const topScores = currentLeaderboard.slice(0, 5);
+            topScores.forEach((entry, index) => {
+                const yPos = 70 + (index * 35);
+                const scoreEntry = this.add.text(0, yPos, 
+                    `${index + 1}. ${entry.name} - ${entry.score}`, {
+                    fontSize: '18px',
+                    fontFamily: 'comic sans ms',
+                    color: '#092C5C',
+                    align: 'center'
+                }).setOrigin(0.5);
+                leaderboardContainer.add(scoreEntry);
+            });
+        }
+        // Continuing createEnhancedGameOverScreen function...
+        
+        // Add play again button
+        const playAgainButton = this.add.rectangle(0, 220, 200, 50, 0x092C5C);
+        const playAgainText = this.add.text(0, 220, 'PLAY AGAIN', {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fontStyle: 'bold',
+            color: '#FFFFFF'
+        }).setOrigin(0.5);
+        
+        // Make button interactive
+        playAgainButton.setInteractive()
+            .on('pointerover', () => playAgainButton.setFillStyle(0x1a365d))
+            .on('pointerout', () => playAgainButton.setFillStyle(0x092C5C));
+        
+        playAgainButton.on('pointerdown', () => {
+            this.tweens.add({
+                targets: gameOverContainer,
+                scale: 0,
+                duration: 300,
+                ease: 'Back.in',
+                onComplete: () => {
+                    gameOverContainer.destroy();
+                    gameOverOverlay.destroy();
+                    restartGame.call(this);
+                }
+            });
+        });
+        
+        // Add all elements to container
+        gameOverContainer.add([
+            panel,
+            headerText,
+            trophy,
+            statsBackground,
+            finalScoreText,
+            scoreValue,
+            totalWinsText,
+            winsValue,
+            gamertagBackground,
+            gamertagText,
+            medalContainer,
+            leaderboardBackground,
+            leaderboardTitle,
+            leaderboardContainer,
+            playAgainButton,
+            playAgainText
+        ]);
+        
+        // Add entry animation
+        gameOverContainer.setScale(0);
+        this.tweens.add({
+            targets: gameOverContainer,
+            scale: 1,
+            duration: 500,
+            ease: 'Back.out'
+        });
+    }
+
+    function createStar() {
+        let itemType = Phaser.Math.Between(1, 100);
+        let item;
+        
+        // Random height for stars in Flappy Bird style
+        const starHeight = Phaser.Math.Between(100, 500);
+        
+        if (itemType <= 15) {  // Blue star - Power Up
+            item = this.add.star(800, starHeight, 5, 15, 30, 0x0000FF);
+            item.setData('points', 500);
+            item.setData('type', 'blueStar');
+        } else if (itemType <= 30) {  // Pizza - Invisibility
+            item = this.add.image(800, starHeight, 'pizza');
+            item.setDisplaySize(50, 50);
+            item.setData('points', 1000);
+            item.setData('type', 'pizza');
+        } else {  // Regular yellow star
+            item = this.add.star(800, starHeight, 5, 15, 20, 0xFFFF00);
+            item.setData('points', 100);
+            item.setData('type', 'yellowStar');
+        }
+
+        this.physics.add.existing(item);
+        stars.add(item);
+        item.body.setVelocityX(-150 * gameSpeed);
+        item.body.setAllowGravity(false);
+    }
+    function createCloud(x, y) {
+        let cloud = this.add.graphics();
+        cloud.fillStyle(0xFFFFFF, 1);
+        cloud.fillCircle(x, y, 20);
+        cloud.fillCircle(x + 15, y + 10, 20);
+        cloud.fillCircle(x + 30, y, 20);
+        cloud.fillCircle(x + 15, y - 10, 20);
+
+        let cloudHitArea = new Phaser.Geom.Circle(x + 15, y, 30);
+        let cloudSprite = this.add.graphics({ fillStyle: { color: 0xFFFFFF, alpha: 0 } })
+            .fillCircleShape(cloudHitArea);
+        
+        this.physics.add.existing(cloudSprite);
+        cloudSprite.body.setCircle(30);
+        cloudSprite.body.setOffset(-15, -30);
+        cloudSprite.setData('lastCollected', 0);
+        cloudSprite.setData('visualCloud', cloud);
+        clouds.add(cloudSprite);
+    }
+
+    function showPointPopup(scene, x, y, points) {
+        let pointText = scene.add.text(x, y, `+${points}`, {
+            fontSize: '24px',
+            fontFamily: 'comic sans ms',
+            fill: '#FFD700',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        scene.tweens.add({
+            targets: pointText,
+            y: y - 50,
+            alpha: 0,
+            duration: 1000,
+            ease: 'Power1',
+            onComplete: function() {
+                pointText.destroy();
+            }
+        });
+    }
+
+    function generateBaseballGamertag() {
+        const adjectives = ['Slugging', 'Speedy', 'Mighty', 'Golden', 'Iron', 'Flying', 'Swift', 'Crafty', 'Clutch', 'Smooth'];
+        const nouns = ['Bat', 'Glove', 'Arm', 'Eye', 'Cleats', 'Slider', 'Fastball', 'Homer', 'Catch', 'Steal'];
+        const numbers = Math.floor(Math.random() * 100);
+
+        const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+        const noun = nouns[Math.floor(Math.random() * nouns.length)];
+
+        return `${adjective}${noun}${numbers}`;
+    }
+
+    function activatePowerUp() {
+        powerUpActive = true;
+        player.body.setGravityY(GRAVITY * 0.5); // Reduced gravity during power-up
+        
+        if (powerUpTimer) {
+            powerUpTimer.remove();
+        }
+        
+        let remainingTime = 5;
+        
+        if (!powerUpText) {
+            powerUpText = this.add.text(400, 100, '', {
+                fontSize: '32px',
+                fontFamily: 'comic sans ms',
+                fill: '#FFFFFF',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+        }
+        
+        updatePowerUpTextPosition();
+        
+        powerUpText.setText(`Power Up: ${remainingTime}`);
+        powerUpText.setVisible(true);
+        
+        powerUpTimer = this.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                remainingTime--;
+                powerUpText.setText(`Power Up: ${remainingTime}`);
+                
+                if (remainingTime <= 0) {
+                    deactivatePowerUp.call(this);
+                }
+            },
+            repeat: 4
+        });
+    }
+
+    function updatePowerUpTextPosition() {
+        if (powerUpText && invisibilityText && powerUpText.visible && invisibilityText.visible) {
+            powerUpText.setPosition(400, 70);
+            invisibilityText.setPosition(400, 130);
+        } else {
+            if (powerUpText) powerUpText.setPosition(400, 100);
+            if (invisibilityText) invisibilityText.setPosition(400, 100);
+        }
+    }
+
+    function collectStar(player, item) {
+        let points = item.getData('points');
+        let itemType = item.getData('type');
+        
+        showPointPopup(this, item.x, item.y, points);
+        
+        item.destroy();
+        score += points;
+        scoreText.setText('SCORE: ' + score);
+
+        // Handle different power-ups
+        if (itemType === 'blueStar') {
+            activatePowerUp.call(this);
+        } else if (itemType === 'pizza') {
+            activatePizzaPowerUp.call(this);
+        } else {
+            // Yellow star boost
+            player.body.setVelocityY(FLAP_VELOCITY * 1.2);
+            this.tweens.add({
+                targets: player,
+                y: player.y - 20,
+                duration: 200,
+                ease: 'Power1',
+                yoyo: true
+            });
+        }
+    }
+
     function create() {
         // Set up resize handling
         if (game.scale) {
@@ -431,7 +1242,7 @@ document.addEventListener('DOMContentLoaded', function() {
             function(player, logo) {
                 return true; // Always check for collision (removes default bounds check)
             }, this);
-        this.physics.add.overlap(player, stars, collectStar, null, this);
+        this.physics.add.overlap(player, stars,collectStar, null, this);
         
         // Add world bounds collision
         player.body.onWorldBounds = true;
@@ -681,120 +1492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function createStar() {
-        let itemType = Phaser.Math.Between(1, 100);
-        let item;
-        
-        // Random height for stars in Flappy Bird style
-        const starHeight = Phaser.Math.Between(100, 500);
-        
-        if (itemType <= 15) {  // Blue star - Power Up
-            item = this.add.star(800, starHeight, 5, 15, 30, 0x0000FF);
-            item.setData('points', 500);
-            item.setData('type', 'blueStar');
-        } else if (itemType <= 30) {  // Pizza - Invisibility
-            item = this.add.image(800, starHeight, 'pizza');
-            item.setDisplaySize(50, 50);
-            item.setData('points', 1000);
-            item.setData('type', 'pizza');
-        } else {  // Regular yellow star
-            item = this.add.star(800, starHeight, 5, 15, 20, 0xFFFF00);
-            item.setData('points', 100);
-            item.setData('type', 'yellowStar');
-        }
-
-        this.physics.add.existing(item);
-        stars.add(item);
-        item.body.setVelocityX(-150 * gameSpeed);
-        item.body.setAllowGravity(false);
-    }
-    function createCloud(x, y) {
-        let cloud = this.add.graphics();
-        cloud.fillStyle(0xFFFFFF, 1);
-        cloud.fillCircle(x, y, 20);
-        cloud.fillCircle(x + 15, y + 10, 20);
-        cloud.fillCircle(x + 30, y, 20);
-        cloud.fillCircle(x + 15, y - 10, 20);
-
-        let cloudHitArea = new Phaser.Geom.Circle(x + 15, y, 30);
-        let cloudSprite = this.add.graphics({ fillStyle: { color: 0xFFFFFF, alpha: 0 } })
-            .fillCircleShape(cloudHitArea);
-        
-        this.physics.add.existing(cloudSprite);
-        cloudSprite.body.setCircle(30);
-        cloudSprite.body.setOffset(-15, -30);
-        cloudSprite.setData('lastCollected', 0);
-        cloudSprite.setData('visualCloud', cloud);
-        clouds.add(cloudSprite);
-    }
-
-    function collectStar(player, item) {
-        let points = item.getData('points');
-        let itemType = item.getData('type');
-        
-        showPointPopup(this, item.x, item.y, points);
-        
-        item.destroy();
-        score += points;
-        scoreText.setText('SCORE: ' + score);
-
-        // Handle different power-ups
-        if (itemType === 'blueStar') {
-            activatePowerUp.call(this);
-        } else if (itemType === 'pizza') {
-            activatePizzaPowerUp.call(this);
-        } else {
-            // Yellow star boost
-            player.body.setVelocityY(FLAP_VELOCITY * 1.2);
-            this.tweens.add({
-                targets: player,
-                y: player.y - 20,
-                duration: 200,
-                ease: 'Power1',
-                yoyo: true
-            });
-        }
-    }
-
-    function activatePowerUp() {
-        powerUpActive = true;
-        player.body.setGravityY(GRAVITY * 0.5); // Reduced gravity during power-up
-        
-        if (powerUpTimer) {
-            powerUpTimer.remove();
-        }
-        
-        let remainingTime = 5;
-        
-        if (!powerUpText) {
-            powerUpText = this.add.text(400, 100, '', {
-                fontSize: '32px',
-                fontFamily: 'comic sans ms',
-                fill: '#FFFFFF',
-                stroke: '#000000',
-                strokeThickness: 4
-            }).setOrigin(0.5);
-        }
-        
-        updatePowerUpTextPosition();
-        
-        powerUpText.setText(`Power Up: ${remainingTime}`);
-        powerUpText.setVisible(true);
-        
-        powerUpTimer = this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                remainingTime--;
-                powerUpText.setText(`Power Up: ${remainingTime}`);
-                
-                if (remainingTime <= 0) {
-                    deactivatePowerUp.call(this);
-                }
-            },
-            repeat: 4
-        });
-    }
-
     function activatePizzaPowerUp() {
         invisibilityActive = true;
         player.setAlpha(0.5);
@@ -853,703 +1550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updatePowerUpTextPosition();
     }
-
-    function updatePowerUpTextPosition() {
-        if (powerUpText && invisibilityText && powerUpText.visible && invisibilityText.visible) {
-            powerUpText.setPosition(400, 70);
-            invisibilityText.setPosition(400, 130);
-        } else {
-            if (powerUpText) powerUpText.setPosition(400, 100);
-            if (invisibilityText) invisibilityText.setPosition(400, 100);
-        }
-    }
-
-    function showPointPopup(scene, x, y, points) {
-        let pointText = scene.add.text(x, y, `+${points}`, {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fill: '#FFD700',
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5);
-
-        scene.tweens.add({
-            targets: pointText,
-            y: y - 50,
-            alpha: 0,
-            duration: 1000,
-            ease: 'Power1',
-            onComplete: function() {
-                pointText.destroy();
-            }
-        });
-    }
-
-    function startGame() {
-        console.log('Start Game function called');
-        
-        // Reset game state
-        score = 0;
-        totalWins = 0;
-        winsText.setText('WINS: 0/162');
-        currentObstacleIndex = 0;
-        lastTubeTime = 0;
-        
-        // Apply mode-specific settings
-        const modeSettings = GAME_MODES[gameMode];
-        gameSpeed = modeSettings.initialSpeed;
-        gapSize = modeSettings.initialGapSize;
-        
-        // Reset and show player
-        player.setPosition(MASCOT_START_X, MASCOT_START_Y);
-        player.setAngle(0);
-        player.setVisible(true);
-        player.body.setGravityY(GRAVITY);
-        
-        // Show UI elements but keep score hidden until gameplay starts
-        winsText.setVisible(true);
-        scoreText.setVisible(false);
-        
-        // Set background
-        regularBackground.setVisible(true);
-        
-        // Create and show Get Ready screen
-        createGetReadyScreen.call(this);
-        
-        // Keep physics paused until player starts
-        this.physics.pause();
-    }
     
-    function createGetReadyScreen() {
-    
-        // Create container for Get Ready elements
-        getReadyContainer = this.add.container(400, 300);
-        
-        // Create semi-transparent background
-        const overlay = this.add.rectangle(0, 0, 800, 600, 0x000000, 0.3);
-        
-        // Create Get Ready text with pixel art style
-        const getReadyText = this.add.text(0, -80, 'GET READY', {
-            fontSize: '48px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            fill: '#F5D130',
-            stroke: '#000000',
-            strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5);
-        
-        // Create countdown text
-        const countdownText = this.add.text(0, -20, '3', {
-            fontSize: '64px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            fill: '#FFFFFF',
-            stroke: '#000000',
-            strokeThickness: 6,
-            align: 'center'
-        }).setOrigin(0.5);
-        
-        // Create tap/space instruction with animation
-        tapInstruction = this.add.text(0, 40, 'TAP OR PRESS SPACE', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fill: '#FFFFFF',
-            stroke: '#000000',
-            strokeThickness: 4,
-            align: 'center'
-        }).setOrigin(0.5);
-        
-        // Add tap icon
-        const tapIcon = this.add.text(0, 100, '👆', {
-            fontSize: '40px'
-        }).setOrigin(0.5);
-        
-        // Add elements to container
-        getReadyContainer.add([overlay, getReadyText, countdownText, tapInstruction, tapIcon]);
-        
-        // Add pulsing animation to tap instruction
-        this.tweens.add({
-            targets: tapInstruction,
-            scale: { from: 1, to: 1.1 },
-            duration: 800,
-            yoyo: true,
-            repeat: -1
-        });
-        
-        // Add bouncing animation to tap icon
-        this.tweens.add({
-            targets: tapIcon,
-            y: { from: tapIcon.y, to: tapIcon.y + 20 },
-            duration: 600,
-            yoyo: true,
-            repeat: -1
-        });
-        
-        getReadyVisible = true;
-    
-        // Create a flag to track if game has started
-        let hasGameStarted = false;
-        let countdownActive = true;
-        
-        // Start game function
-        const startGame = () => {
-            if (hasGameStarted) return;
-            hasGameStarted = true;
-            countdownActive = false;
-    
-            // Fade out Get Ready screen
-            this.tweens.add({
-                targets: getReadyContainer,
-                alpha: 0,
-                duration: 300,
-                onComplete: () => {
-                    getReadyContainer.destroy();
-                    
-                    // Start actual gameplay
-                    gameActive = true;
-                    gameStarted = true;
-                    scoreText.setVisible(true);
-                    this.physics.resume();
-                }
-            });
-        };
-    
-        // Set up countdown sequence
-        let count = 3;
-        
-        const updateCountdown = () => {
-            if (!countdownActive) return;
-            
-            // Scale animation for current number
-            this.tweens.add({
-                targets: countdownText,
-                scale: { from: 1.2, to: 1 },
-                duration: 300,
-                ease: 'Power2'
-            });
-    
-            if (count > 1) {
-                count--;
-                countdownText.setText(count.toString());
-                this.time.delayedCall(1000, updateCountdown);
-            } else {
-                countdownText.setText('START!');
-                this.tweens.add({
-                    targets: countdownText,
-                    scale: { from: 1.5, to: 1 },
-                    duration: 300,
-                    ease: 'Power2',
-                    onComplete: () => {
-                        if (countdownActive && !hasGameStarted) {
-                            startGame();
-                        }
-                    }
-                });
-            }
-        };
-    
-        // Delay adding input listeners until after a short delay
-        this.time.delayedCall(500, () => {
-            // Manual start handlers (for early start)
-            const manualStart = () => {
-                if (!hasGameStarted) {
-                    startGame();
-                }
-            };
-    
-            // Add input listeners
-            this.input.on('pointerdown', manualStart);
-            this.input.keyboard.on('keydown-SPACE', manualStart);
-        });
-    
-        // Start the countdown sequence
-        updateCountdown();
-    }
-
-    function gameOver() {
-        if (!gameActive || invisibilityActive) return;
-        
-        console.log('Game Over function called');
-        this.physics.pause();
-        gameActive = false;
-
-        // Clean up UI elements
-        scoreText.destroy();
-        winsText.setVisible(false);
-
-        // Deactivate any active power-ups
-        if (powerUpActive) {
-            deactivatePowerUp.call(this);
-        }
-        if (invisibilityActive) {
-            deactivatePizzaPowerUp.call(this);
-        }
-
-        // Generate gamertag if needed
-        if (!userGamertag) {
-            userGamertag = generateBaseballGamertag();
-        }
-
-        // Add game over animations
-        this.tweens.add({
-            targets: player,
-            x: player.x + 10,
-            duration: 100,
-            yoyo: true,
-            repeat: 5,
-            onComplete: () => {
-                this.tweens.add({
-                    targets: player,
-                    y: 800,
-                    angle: 360,
-                    duration: 1000,
-                    ease: 'Power1',
-                    onComplete: () => {
-                        player.destroy();
-                        
-                        // Clean up previous game over screen
-                        if (gameOverContainer) {
-                            gameOverContainer.destroy();
-                        }
-                        if (gameOverOverlay) {
-                            gameOverOverlay.destroy();
-                        }
-                        
-                        // Show new game over screen
-                        this.time.delayedCall(100, () => {
-                            createEnhancedGameOverScreen.call(this);
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    function createEnhancedGameOverScreen() {
-        // Create overlay
-        gameOverOverlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
-        
-        // Create container
-        gameOverContainer = this.add.container(400, 300);
-        
-        // Create panel background
-        const panel = this.add.rectangle(0, 0, 400, 550, 0xFFFFFF, 1);
-        panel.setStrokeStyle(2, 0x092C5C);
-        
-        // Add header
-        const headerText = this.add.text(0, -240, 'GAME OVER', {
-            fontSize: '40px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-        
-        // Add trophy
-        const trophy = this.add.image(0, -190, 'trophy');
-        trophy.setScale(0.15);
-        
-        // Create stats section
-        const statsBackground = this.add.rectangle(0, -130, 350, 80, 0xF0F4F8);
-        
-        // Add score display
-        finalScoreText = this.add.text(-100, -150, 'FINAL SCORE', {
-            fontSize: '20px',
-            fontFamily: 'comic sans ms',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-        
-        const scoreValue = this.add.text(-100, -120, '0', {
-            fontSize: '32px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-        
-        // Animate score
-        this.tweens.addCounter({
-            from: 0,
-            to: score,
-            duration: 1500,
-            onUpdate: function (tween) {
-                scoreValue.setText(Math.floor(tween.getValue()));
-            }
-        });
-        
-        // Add wins display
-        totalWinsText = this.add.text(100, -150, 'TOTAL WINS', {
-            fontSize: '20px',
-            fontFamily: 'comic sans ms',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-        
-        const winsValue = this.add.text(100, -120, totalWins.toString(), {
-            fontSize: '32px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-        
-        // Add gamertag display
-        const gamertagBackground = this.add.rectangle(0, -60, 350, 50, 0xFFF9E6);
-        gamertagText = this.add.text(0, -60, userGamertag, {
-            fontSize: '28px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            color: '#092C5C'
-        }).setOrigin(0.5);
-
-        // Add medals based on score
-        const medalContainer = this.add.container(0, -10);
-        if (score >= 1000) {
-            const goldMedal = this.add.image(-60, 0, 'gold-medal').setScale(0.12);
-            medalContainer.add(goldMedal);
-        }
-        if (score >= 500) {
-            const silverMedal = this.add.image(0, 0, 'medal-silver').setScale(0.12);
-            medalContainer.add(silverMedal);
-        }
-        if (score >= 100) {
-            const bronzeMedal = this.add.image(60, 0, 'medal-bronze').setScale(0.12);
-            medalContainer.add(bronzeMedal);
-        }
-        
-        // Update and show leaderboard
-        updateLeaderboard(score);
-        const leaderboardBackground = this.add.rectangle(0, 120, 350, 200, 0xF5F5F5);
-        
-        const leaderboardTitle = this.add.text(0, 40, 'TOP SCORES', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            color: '#092C5C',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
-    
-        // Create leaderboard entries
-        const leaderboardContainer = this.add.container(0, 0);
-        const currentLeaderboard = gameMode === 'ALL STAR' ? allStarLeaderboard : hallOfFameLeaderboard;
-        
-        if (currentLeaderboard.length > 0) {
-            const topScores = currentLeaderboard.slice(0, 5);
-            topScores.forEach((entry, index) => {
-                const yPos = 70 + (index * 35);
-                const scoreEntry = this.add.text(0, yPos, 
-                    `${index + 1}. ${entry.name} - ${entry.score}`, {
-                    fontSize: '18px',
-                    fontFamily: 'comic sans ms',
-                    color: '#092C5C',
-                    align: 'center'
-                }).setOrigin(0.5);
-                leaderboardContainer.add(scoreEntry);
-            });
-        }
-        // Continuing createEnhancedGameOverScreen function...
-        
-        // Add play again button
-        const playAgainButton = this.add.rectangle(0, 220, 200, 50, 0x092C5C);
-        const playAgainText = this.add.text(0, 220, 'PLAY AGAIN', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            color: '#FFFFFF'
-        }).setOrigin(0.5);
-        
-        // Make button interactive
-        playAgainButton.setInteractive()
-            .on('pointerover', () => playAgainButton.setFillStyle(0x1a365d))
-            .on('pointerout', () => playAgainButton.setFillStyle(0x092C5C));
-        
-        playAgainButton.on('pointerdown', () => {
-            this.tweens.add({
-                targets: gameOverContainer,
-                scale: 0,
-                duration: 300,
-                ease: 'Back.in',
-                onComplete: () => {
-                    gameOverContainer.destroy();
-                    gameOverOverlay.destroy();
-                    restartGame.call(this);
-                }
-            });
-        });
-        
-        // Add all elements to container
-        gameOverContainer.add([
-            panel,
-            headerText,
-            trophy,
-            statsBackground,
-            finalScoreText,
-            scoreValue,
-            totalWinsText,
-            winsValue,
-            gamertagBackground,
-            gamertagText,
-            medalContainer,
-            leaderboardBackground,
-            leaderboardTitle,
-            leaderboardContainer,
-            playAgainButton,
-            playAgainText
-        ]);
-        
-        // Add entry animation
-        gameOverContainer.setScale(0);
-        this.tweens.add({
-            targets: gameOverContainer,
-            scale: 1,
-            duration: 500,
-            ease: 'Back.out'
-        });
-    }
-
-    function updateLeaderboard(score) {
-        let leaderboard = gameMode === 'ALL STAR' ? allStarLeaderboard : hallOfFameLeaderboard;
-        leaderboard.push({ name: userGamertag, score: score, wins: totalWins });
-        leaderboard.sort((a, b) => b.score - a.score);
-        leaderboard = leaderboard.slice(0, 15);
-        console.log('Leaderboard updated:', { name: userGamertag, score: score, wins: totalWins });
-    }
-
-    function generateBaseballGamertag() {
-        const adjectives = ['Slugging', 'Speedy', 'Mighty', 'Golden', 'Iron', 'Flying', 'Swift', 'Crafty', 'Clutch', 'Smooth'];
-        const nouns = ['Bat', 'Glove', 'Arm', 'Eye', 'Cleats', 'Slider', 'Fastball', 'Homer', 'Catch', 'Steal'];
-        const numbers = Math.floor(Math.random() * 100);
-
-        const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-        const noun = nouns[Math.floor(Math.random() * nouns.length)];
-
-        return `${adjective}${noun}${numbers}`;
-    }
-
-    function createGameModeButtons() {
-        console.log("Game mode buttons created");
-        let allStarButton = this.add.text(300, 510, 'ALL STAR', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fill: '#000000',  // Changed to black text
-            backgroundColor: '#F5D130',  // Changed to Rays Yellow
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
-        
-        let hallOfFameButton = this.add.text(500, 510, 'HALL OF FAME', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fill: '#000000',  // Changed to black text
-            backgroundColor: '#F5D130',  // Changed to Rays Yellow
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
-
-        allStarButton.on('pointerdown', () => showOptInScreen.call(this, 'ALL STAR'));
-        hallOfFameButton.on('pointerdown', () => showOptInScreen.call(this, 'HALL OF FAME'));
-    }
-
-    function showOptInScreen(mode) {
-        gameMode = mode;
-        optInScreen.setVisible(true);
-        howToPlayText.setVisible(false);
-        
-        // Hide mode selection buttons
-        this.children.getAll().forEach(child => {
-            if (child.text === 'ALL STAR' || child.text === 'HALL OF FAME') {
-                child.setVisible(false);
-            }
-        });
-    }
-
-    function createOptInScreen() {
-        optInScreen = this.add.container(400, 300);
-        optInScreen.setVisible(false);
-
-        let bg = this.add.rectangle(0, 0, 800, 600, 0x000000, 0.8);
-        
-        let title = this.add.text(0, -150, 'READY TO PLAY?', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            fill: '#000',
-            align: 'center',
-            backgroundColor: '#F5D130',
-            padding: { x: 20, y: 10 }
-        }).setOrigin(0.5);
-
-        // Create checkbox
-        let checkbox = this.add.rectangle(-150, 0, 30, 30, 0xF5D130);
-        checkbox.setStrokeStyle(2, 0x000000);
-        checkbox.setOrigin(0.5);
-        checkbox.setInteractive();
-        
-        let checkmark = this.add.text(-150, 0, '✓', { 
-            fontSize: '24px', 
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            fill: '#000000' 
-        }).setOrigin(0.5);
-        checkmark.setVisible(false);
-
-        let checkboxText = this.add.text(-120, 0, 'Player agrees to the game rules,\nprivacy policies, terms and conditions', {
-            fontSize: '16px',
-            fontFamily: 'comic sans ms',
-            fill: '#000',
-            align: 'left',
-            backgroundColor: '#F5D130',
-            padding: { x: 10, y: 5 },
-            wordWrap: { width: 400 }
-        }).setOrigin(0, 0.5);
-
-        checkbox.on('pointerdown', function() {
-            checkmark.setVisible(!checkmark.visible);
-        });
-
-        let playButton = this.add.text(0, 100, 'PLAY!', {
-            fontSize: '24px',
-            fontFamily: 'comic sans ms',
-            fontStyle: 'bold',
-            fill: '#000',
-            backgroundColor: '#F5D130',
-            padding: { x: 20, y: 10 }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-        optInScreen.add([bg, title, checkbox, checkmark, checkboxText, playButton]);
-
-        playButton.on('pointerdown', () => {
-            if (checkmark.visible) {
-                userOktaId = generateMockOktaId();
-                console.log('User OKTA ID:', userOktaId);
-                optInScreen.setVisible(false);
-                startGame.call(this);
-            } else {
-                let errorText = this.add.text(0, 150, 'Please agree to the game policies and rules', {
-                    fontSize: '16px',
-                    fontFamily: 'comic sans ms',
-                    fill: '#FF0000',
-                    backgroundColor: '#F5D130',
-                    padding: { x: 10, y: 5 }
-                }).setOrigin(0.5);
-                optInScreen.add(errorText);
-                this.time.delayedCall(2000, () => errorText.destroy());
-            }
-        });
-    }
-
-    function generateMockOktaId() {
-        return 'OKTA_' + Math.random().toString(36).substr(2, 9);
-    }
-
-    function restartGame() {
-        try {
-            // Reset game state flags first
-            gameActive = false;
-            gameStarted = false;
-            getReadyVisible = false;
-            
-            // Get mode-specific settings
-            const modeSettings = GAME_MODES[gameMode];
-            
-            // Reset core game variables
-            score = 0;
-            totalWins = 0;
-            currentObstacleIndex = 0;
-            lastTubeTime = 0;
-            gameSpeed = modeSettings.initialSpeed;
-            gapSize = modeSettings.initialGapSize;
-            powerUpActive = false;
-            invisibilityActive = false;
-    
-            // Clean up all existing game elements
-            this.tweens.killAll(); // Stop all running tweens
-            
-            // Clear all game groups
-            if (tubes) tubes.clear(true, true);
-            if (logos) logos.clear(true, true);
-            if (stars) stars.clear(true, true);
-            if (clouds) clouds.clear(true, true);
-
-            // Clean up text elements
-            if (scoreText) scoreText.destroy();
-            if (winsText) winsText.destroy();
-            if (powerUpText) powerUpText.destroy();
-            if (invisibilityText) invisibilityText.destroy();
-            if (gameOverContainer) gameOverContainer.destroy();
-            if (gameOverOverlay) gameOverOverlay.destroy();
-            if (getReadyContainer) getReadyContainer.destroy();
-
-            // Clean up timers
-            if (powerUpTimer) powerUpTimer.remove();
-            if (invisibilityTimer) invisibilityTimer.remove();
-
-            // Reset player
-            if (player) player.destroy();
-            
-            // Recreate essential game elements
-            // Recreate wins text
-            winsText = this.add.text(790, 20, 'WINS: 0/162', {
-                fontSize: '20px',
-                fontFamily: 'comic sans ms',
-                fontStyle: 'bold',
-                fill: '#FFFFFF',
-                align: 'right'
-            });
-            winsText.setOrigin(1, 0);
-            winsText.setVisible(true);
-            winsText.setDepth(20);
-
-            // Recreate score text
-            scoreText = this.add.text(400, 30, 'SCORE: 0', { 
-                fontSize: '24px', 
-                fill: '#FFFFFF',
-                fontFamily: 'comic sans ms',
-                fontStyle: 'bold'
-            });
-            scoreText.setOrigin(0.5);
-            scoreText.setVisible(false);
-            scoreText.setDepth(20);
-
-            // Create new player
-            player = createMascot(this, MASCOT_START_X, MASCOT_START_Y);
-            this.physics.add.existing(player);
-            player.body.setSize(60, 60);
-            player.body.setCollideWorldBounds(true);
-            player.setDepth(10);
-            player.setAlpha(1);
-            player.setVisible(true);
-            player.setAngle(0);
-            player.body.setGravityY(GRAVITY);
-
-            // Reset null references
-            powerUpTimer = null;
-            invisibilityTimer = null;
-            powerUpText = null;
-            invisibilityText = null;
-            getReadyContainer = null;
-    
-            // Reset physics and collisions
-            setupPhysics.call(this);
-    
-            // Make sure physics is paused before showing Get Ready screen
-            this.physics.pause();
-    
-            // Small delay before showing Get Ready screen
-            this.time.delayedCall(100, () => {
-                createGetReadyScreen.call(this);
-            });
-    
-            console.log(`Game restarted in ${gameMode} mode with speed: ${gameSpeed} and gap size: ${gapSize}`);
-    
-        } catch (error) {
-            console.error('Critical error during game restart:', error);
-            
-            const errorText = this.add.text(400, 300, 'Error restarting game\nPlease refresh the page', {
-                fontSize: '24px',
-                fontFamily: 'comic sans ms',
-                fill: '#FF0000',
-                align: 'center'
-            }).setOrigin(0.5);
-            
-            setTimeout(() => window.location.reload(), 3000);
-        }
-    }
-
     // Orientation handling
     function checkOrientation() {
         const message = document.getElementById('orientation-message');
