@@ -228,10 +228,10 @@ document.addEventListener('DOMContentLoaded', function() {
         this.load.image('pizza', 'assets/pizza.png');
         
         // Game over screen assets
-        this.load.svg('trophy', 'assets/trophy.svg');
-        this.load.svg('medal-gold', 'assets/medal-gold.svg');
-        this.load.svg('medal-silver', 'assets/medal-silver.svg');
-        this.load.svg('medal-bronze', 'assets/medal-bronze.svg');
+        this.load.image('trophy', 'assets/trophy.png');
+        this.load.image('medal-gold', 'assets/medal-gold.png');
+        this.load.image('medal-silver', 'assets/medal-silver.png');
+        this.load.image('medal-bronze', 'assets/medal-bronze.png');
         
         // Load all team logos
         const obstacleImages = [
@@ -921,6 +921,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function createGetReadyScreen() {
+    
         // Create container for Get Ready elements
         getReadyContainer = this.add.container(400, 300);
         
@@ -1058,8 +1059,8 @@ document.addEventListener('DOMContentLoaded', function() {
             };
     
             // Add input listeners
-            this.input.once('pointerdown', manualStart);
-            this.input.keyboard.once('keydown-SPACE', manualStart);
+            this.input.on('pointerdown', manualStart);
+            this.input.keyboard.on('keydown-SPACE', manualStart);
         });
     
         // Start the countdown sequence
@@ -1201,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add medals based on score
         const medalContainer = this.add.container(0, -10);
         if (score >= 1000) {
-            const goldMedal = this.add.image(-60, 0, 'medal-gold').setScale(0.12);
+            const goldMedal = this.add.image(-60, 0, 'gold-medal').setScale(0.12);
             medalContainer.add(goldMedal);
         }
         if (score >= 500) {
@@ -1322,6 +1323,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createGameModeButtons() {
+        console.log("Game mode buttons created");
         let allStarButton = this.add.text(300, 510, 'ALL STAR', {
             fontSize: '24px',
             fontFamily: 'comic sans ms',
