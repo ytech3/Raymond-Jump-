@@ -1073,6 +1073,65 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function deactivatePowerUp() {
+        powerUpActive = false;
+        player.body.setGravityY(GRAVITY);
+        powerUpText.setVisible(false);
+        if (powerUpTimer) {
+            powerUpTimer.remove();
+        }
+        updatePowerUpTextPosition();
+    }
+
+    function deactivatePizzaPowerUp() {
+        invisibilityActive = false;
+        player.setAlpha(1);
+        invisibilityText.setVisible(false);
+        if (invisibilityTimer) {
+            invisibilityTimer.remove();
+        }
+        updatePowerUpTextPosition();
+    }
+
+    function activatePizzaPowerUp() {
+        invisibilityActive = true;
+        player.setAlpha(0.5);
+        
+        if (invisibilityTimer) {
+            invisibilityTimer.remove();
+        }
+        
+        let remainingTime = 5;
+        
+        if (!invisibilityText) {
+            invisibilityText = this.add.text(400, 100, '', {
+                fontSize: '32px',
+                fontFamily: 'comic sans ms',
+                fill: '#FFFFFF',
+                stroke: '#000000',
+                strokeThickness: 4
+            }).setOrigin(0.5);
+        }
+        
+        updatePowerUpTextPosition();
+        
+        invisibilityText.setText(`Invisible Mode: ${remainingTime}`);
+        invisibilityText.setVisible(true);
+        
+        invisibilityTimer = this.time.addEvent({
+            delay: 1000,
+            callback: () => {
+                remainingTime--;
+                invisibilityText.setText(`Invisible Mode: ${remainingTime}`);
+                
+                if (remainingTime <= 0) {
+                    deactivatePizzaPowerUp.call(this);
+                }
+            },
+            repeat: 4
+        });
+    }
+
     function collectStar(player, item) {
         let points = item.getData('points');
         let itemType = item.getData('type');
@@ -1491,65 +1550,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    
 
-    function activatePizzaPowerUp() {
-        invisibilityActive = true;
-        player.setAlpha(0.5);
-        
-        if (invisibilityTimer) {
-            invisibilityTimer.remove();
-        }
-        
-        let remainingTime = 5;
-        
-        if (!invisibilityText) {
-            invisibilityText = this.add.text(400, 100, '', {
-                fontSize: '32px',
-                fontFamily: 'comic sans ms',
-                fill: '#FFFFFF',
-                stroke: '#000000',
-                strokeThickness: 4
-            }).setOrigin(0.5);
-        }
-        
-        updatePowerUpTextPosition();
-        
-        invisibilityText.setText(`Invisible Mode: ${remainingTime}`);
-        invisibilityText.setVisible(true);
-        
-        invisibilityTimer = this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                remainingTime--;
-                invisibilityText.setText(`Invisible Mode: ${remainingTime}`);
-                
-                if (remainingTime <= 0) {
-                    deactivatePizzaPowerUp.call(this);
-                }
-            },
-            repeat: 4
-        });
-    }
-
-    function deactivatePowerUp() {
-        powerUpActive = false;
-        player.body.setGravityY(GRAVITY);
-        powerUpText.setVisible(false);
-        if (powerUpTimer) {
-            powerUpTimer.remove();
-        }
-        updatePowerUpTextPosition();
-    }
-
-    function deactivatePizzaPowerUp() {
-        invisibilityActive = false;
-        player.setAlpha(1);
-        invisibilityText.setVisible(false);
-        if (invisibilityTimer) {
-            invisibilityTimer.remove();
-        }
-        updatePowerUpTextPosition();
-    }
     
     // Orientation handling
     function checkOrientation() {
