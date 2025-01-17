@@ -15,6 +15,8 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('mascot', 'assets/blue_mascot.png');
         this.load.image('tube', 'assets/tube.png');
         this.load.image('angels', 'assets/angels.png');
+        this.load.image('star', 'assets/star.png');
+        this.load.image('hotdog', 'assets/hot_dog.png');
     }
 
     create() {
@@ -36,10 +38,17 @@ export default class PlayScene extends Phaser.Scene {
         //Create tubes and collectibles groups
         this.tubes = this.physics.add.group({ allowGravity: false });
         this.collectibles = this.physics.add.group({ allowGravity: false });
+        this.stars = this.physics.add.group({ allowGravity: false });
+        this.hotdogs = this.physics.add.group({ allowGravity: false });
 
         //Setup spawner and collision
         setupTubeSpawner(this);
         setupCollision(this);
+
+        //Initially pause spawners
+        this.tubeSpawner.paused = true;
+        this.starSpawner.paused = true;
+        this.hotdogSpawner.paused = true;
 
         //Create pause button, set functionality
         const pauseButton = this.add.text(this.scale.width - 10, 10, 'Pause', {
@@ -70,10 +79,9 @@ export default class PlayScene extends Phaser.Scene {
         this.player.body.allowGravity = true;
         this.physics.resume();
 
-        if(this.tubeSpawner){
-            console.log('unpausing tube spawner');
-            this.tubeSpawner.paused = false;
-        }
+        this.tubeSpawner.paused = false;
+        this.starSpawner.paused = false;
+        this.hotdogSpawner.paused = false;
 
         this.input.on('pointerdown', () => {
             this.player.setVelocityY(-425);
