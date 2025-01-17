@@ -2,6 +2,8 @@ export function showGameOverPanel(scene) {
     //Pause the game
     scene.physics.pause();
     scene.tubeSpawner.paused = true;
+    scene.hotdogSpawner.paused = true;
+    scene.starSpawner.paused = true;
 
     //Game Over panel
     const overlay = document.createElement('div');

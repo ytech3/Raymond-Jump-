@@ -109,6 +109,8 @@ export default class PlayScene extends Phaser.Scene {
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
         this.tubeSpawner.paused = true;
+        this.starSpawner.paused = true;
+        this.hotdogSpawner.paused = true;
 
         //Clear existing tubes and collectibles
         this.tubes.clear(true, true);
