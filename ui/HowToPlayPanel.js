@@ -5,8 +5,8 @@ export function createHowToPlayOverlay(scene) {
     overlay.innerHTML = `
         <div class="content-box">
             <h1>HOW TO PLAY</h1>
-            <p>Press SPACE or tap the screen to make the mascot fly.</p>
-            <p>Avoid obstacles and collect stars for points!</p>
+            <p>Tap the screen to make Raymond jump.</p>
+            <p>Avoid obstacles and collect opponents for points!</p>
             <div class="checkbox-container">
                 <input type="checkbox" id="agreeCheckbox">
                 <label for="agreeCheckbox">I agree to the game rules</label>
