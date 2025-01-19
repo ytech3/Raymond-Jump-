@@ -4,6 +4,8 @@ import { setupCollision } from '../utils/collision.js';
 import { showGameOverPanel } from '../ui/GameOverPanel.js';
 import { createHowToPlayOverlay } from '../ui/HowToPlayPanel.js';
 import { createPausePanel } from '../ui/PausePanel.js';
+import { createPointText } from '../utils/pointDisplay.js';
+
 
 export default class PlayScene extends Phaser.Scene {
     constructor() {
@@ -69,7 +71,7 @@ export default class PlayScene extends Phaser.Scene {
         //Score text
         this.scoreText = this.add.text(20, 20, 'Score: 0', {
             fontSize: '24px',
-            color: '#FFFFFF',
+            color: '#F5D130',
         });
         this.scoreText.setDepth(10);
     }
@@ -99,7 +101,6 @@ export default class PlayScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         return;
     }
-
         cleanupTubes(this);
     }
 
