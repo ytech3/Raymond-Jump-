@@ -160,6 +160,31 @@ body {
     font-size: 18px;
 }
 
+/*Medals*/
+.medal-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.trophy-container {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 20px;
+}
+
+.medal, .trophy {
+    width: 60px;
+    height: 60px;
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.medal.bright, .trophy.bright {
+    opacity: 1;
+}
+
 @media (max-width: 600px) {
     .game-container {
         padding: 10px;
