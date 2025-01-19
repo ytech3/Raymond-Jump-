@@ -1,4 +1,5 @@
 import { calculateScale } from './scaling.js';
+import { getNextCollectibleTeam } from './collectibles.js';
 
 export function setupTubeSpawner(scene) {
     scene.tubeSpawner = scene.time.addEvent({
@@ -49,8 +50,9 @@ export function createTubePair(scene) {
     bottomTube.setDisplaySize(tubeWidth, tubeHeight);
     bottomTube.body.setVelocityX(-200);
 
-    //Collectible in center of gap
-    const collectible = scene.collectibles.create(scene.scale.width, gapY + gapSize / 2, 'angels');
+    //Team collectible in center of gap
+    const team = getNextCollectibleTeam();
+    const collectible = scene.collectibles.create(scene.scale.width, gapY + gapSize / 2, team);
     collectible.setDisplaySize(250 * scaleFactor, 250 * scaleFactor);
     collectible.body.setVelocityX(-200);
     collectible.setOrigin(0.5, 0.5);

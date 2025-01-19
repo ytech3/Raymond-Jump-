@@ -4,6 +4,10 @@ import { setupCollision } from '../utils/collision.js';
 import { showGameOverPanel } from '../ui/GameOverPanel.js';
 import { createHowToPlayOverlay } from '../ui/HowToPlayPanel.js';
 import { createPausePanel } from '../ui/PausePanel.js';
+import { createPointText } from '../utils/pointDisplay.js';
+import { gameSchedule } from '../utils/schedule.js';
+import { resetScheduleIndex } from '../utils/collectibles.js';
+
 
 export default class PlayScene extends Phaser.Scene {
     constructor() {
@@ -14,14 +18,26 @@ export default class PlayScene extends Phaser.Scene {
     preload() {
         this.load.image('mascot', 'assets/blue_mascot.png');
         this.load.image('tube', 'assets/tube.png');
-        this.load.image('angels', 'assets/angels.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
+
+        const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
+        uniqueTeams.forEach(team => {
+            this.load.image(team, `assets/${team}.png`); // Load dynamically
+        });
+    }
+
+    //Create user ID
+    generateUserID() {
+        return 'ID-' + Math.floor(1000 + Math.random() * 9000); // Generates a random ID like ID-1234
     }
 
     create() {
         const scaleFactor = calculateScale(this);
         createHowToPlayOverlay(this);
+
+        this.userID = localStorage.getItem('userID') || this.generateUserID();
+    localStorage.setItem('userID', this.userID);
 
         this.physics.pause();
         this.gameStarted = false;
@@ -69,7 +85,7 @@ export default class PlayScene extends Phaser.Scene {
         //Score text
         this.scoreText = this.add.text(20, 20, 'Score: 0', {
             fontSize: '24px',
-            color: '#FFFFFF',
+            color: '#F5D130',
         });
         this.scoreText.setDepth(10);
     }
@@ -98,7 +114,7 @@ export default class PlayScene extends Phaser.Scene {
         if (!this.gameStarted) {
         this.player.setVelocity(0, 0);
         return;
-    }
+        }
 
         cleanupTubes(this);
     }
@@ -108,6 +124,8 @@ export default class PlayScene extends Phaser.Scene {
         this.score = 0;
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
+
+        //Pause all game mechanics
         this.tubeSpawner.paused = true;
         this.starSpawner.paused = true;
         this.hotdogSpawner.paused = true;
@@ -115,6 +133,7 @@ export default class PlayScene extends Phaser.Scene {
         //Clear existing tubes and collectibles
         this.tubes.clear(true, true);
         this.collectibles.clear(true, true);
+        resetScheduleIndex();
 
         //Reset player position and state
         this.player.setPosition(this.scale.width / 4, this.scale.height / 2);
