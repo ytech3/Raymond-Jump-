@@ -27,9 +27,17 @@ export default class PlayScene extends Phaser.Scene {
         });
     }
 
+    //Create user ID
+    generateUserID() {
+        return 'ID-' + Math.floor(1000 + Math.random() * 9000); // Generates a random ID like ID-1234
+    }
+
     create() {
         const scaleFactor = calculateScale(this);
         createHowToPlayOverlay(this);
+
+        this.userID = localStorage.getItem('userID') || this.generateUserID();
+    localStorage.setItem('userID', this.userID);
 
         this.physics.pause();
         this.gameStarted = false;

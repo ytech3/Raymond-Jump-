@@ -1,3 +1,5 @@
+import { updateHighScores } from '../utils/scoreManager.js';
+
 export function showGameOverPanel(scene) {
     //Pause the game
     scene.physics.pause();
@@ -8,6 +10,16 @@ export function showGameOverPanel(scene) {
     //Determine Rewards
     const score = scene.score;
     const allTeamsCollected = scene.scheduleIndex === 0;
+    const highScores = updateHighScores(scene.userID, scene.score);
+
+    const tableRows = highScores.map(
+        (entry, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${entry.userID}</td>
+            <td>${entry.score}</td>
+        </tr>`
+    ).join('');
 
     //Game Over panel
     const overlay = document.createElement('div');
@@ -25,6 +37,19 @@ export function showGameOverPanel(scene) {
             <div class="trophy-container">
                 <img src="assets/trophy.png" id="trophy" class="trophy" alt="Trophy">
             </div>
+            <h3>High Scores</h3>
+            <table class="high-score-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
             <button class="game-over-play-again">Play Again</button>
             <div class="legal-links-container">
                 <button class="legal-link" onclick="window.open('https://www.mlb.com/rays/official-information/contact')">Support</button>

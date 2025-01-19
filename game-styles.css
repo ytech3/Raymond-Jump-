@@ -165,24 +165,64 @@ body {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin: 20px 0;
 }
 
 .trophy-container {
     display: flex;
     justify-content: center;
-    margin: 10px 0 20px;
 }
 
 .medal, .trophy {
     width: 60px;
     height: 60px;
     opacity: 0.3;
-    transition: opacity 0.3s ease-in-out;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .medal.bright, .trophy.bright {
     opacity: 1;
+}
+
+.medal.animated,
+.trophy.animated {
+    transform: scale(1.5) rotate(10deg);
+    animation: shake 0.6s ease;
+}
+
+.high-score-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-family: 'Comic Sans MS', sans-serif;
+}
+
+.high-score-table th,
+.high-score-table td {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.high-score-table th {
+    background-color: #092C5C;
+    color: #F5D130;
+    font-weight: bold;
+}
+
+.high-score-table td {
+    color: #333;
+}
+
+.high-score-table tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: scale(1.5) rotate(10deg);
+    }
+    50% {
+        transform: scale(1.5) rotate(-10deg);
+    }
 }
 
 @media (max-width: 600px) {
