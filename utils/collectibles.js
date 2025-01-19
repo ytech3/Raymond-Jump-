@@ -8,3 +8,7 @@ export function getNextCollectibleTeam() {
     scheduleIndex = (scheduleIndex + 1) % teamSchedule.length;
     return team;
 }
+
+export function resetScheduleIndex() {
+    scheduleIndex = 0;
+}

@@ -6,6 +6,7 @@ import { createHowToPlayOverlay } from '../ui/HowToPlayPanel.js';
 import { createPausePanel } from '../ui/PausePanel.js';
 import { createPointText } from '../utils/pointDisplay.js';
 import { gameSchedule } from '../utils/schedule.js';
+import { resetScheduleIndex } from '../utils/collectibles.js';
 
 
 export default class PlayScene extends Phaser.Scene {
@@ -115,6 +116,8 @@ export default class PlayScene extends Phaser.Scene {
         this.score = 0;
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
+
+        //Pause all game mechanics
         this.tubeSpawner.paused = true;
         this.starSpawner.paused = true;
         this.hotdogSpawner.paused = true;
@@ -122,6 +125,7 @@ export default class PlayScene extends Phaser.Scene {
         //Clear existing tubes and collectibles
         this.tubes.clear(true, true);
         this.collectibles.clear(true, true);
+        resetScheduleIndex();
 
         //Reset player position and state
         this.player.setPosition(this.scale.width / 4, this.scale.height / 2);
