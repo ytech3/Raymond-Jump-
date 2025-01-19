@@ -5,6 +5,7 @@ import { showGameOverPanel } from '../ui/GameOverPanel.js';
 import { createHowToPlayOverlay } from '../ui/HowToPlayPanel.js';
 import { createPausePanel } from '../ui/PausePanel.js';
 import { createPointText } from '../utils/pointDisplay.js';
+import { gameSchedule } from '../utils/schedule.js';
 
 
 export default class PlayScene extends Phaser.Scene {
@@ -16,9 +17,13 @@ export default class PlayScene extends Phaser.Scene {
     preload() {
         this.load.image('mascot', 'assets/blue_mascot.png');
         this.load.image('tube', 'assets/tube.png');
-        this.load.image('angels', 'assets/angels.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
+
+        const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
+        uniqueTeams.forEach(team => {
+            this.load.image(team, `assets/${team}.png`); // Load dynamically
+        });
     }
 
     create() {
@@ -100,7 +105,8 @@ export default class PlayScene extends Phaser.Scene {
         if (!this.gameStarted) {
         this.player.setVelocity(0, 0);
         return;
-    }
+        }
+
         cleanupTubes(this);
     }
 
