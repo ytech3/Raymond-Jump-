@@ -62,8 +62,8 @@ export default class PlayScene extends Phaser.Scene {
         this.gameStarted = false;
 
         //Add the player sprite, shrink collider by 10%
-        const mascotWidth = this.scale.width * 0.25;
-        const mascotHeight = this.scale.height * 0.15;
+        const mascotWidth = this.scale.width * 0.2;
+        const mascotHeight = this.scale.height * 0.1;
         this.player = this.physics.add.sprite(this.scale.width / 4, this.scale.height / 2, 'mascot');
         this.player.setDisplaySize(mascotWidth, mascotHeight);
         this.player.setCollideWorldBounds(true);
