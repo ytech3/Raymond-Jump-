@@ -94,6 +94,19 @@ body {
     transition: background-color 0.3s;
 }
 
+.game-over-play-again {
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: #092C5C;
+    color: #F5D130;
+    font-size: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
 .start-button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -151,25 +164,22 @@ body {
 
 .game-over-panel h2 {
     color: #092C5C;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 .game-over-panel p {
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     font-size: 18px;
 }
 
 /*Medals*/
-.medal-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
+.medal-container,
 .trophy-container {
     display: flex;
     justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
 }
 
 .medal, .trophy {
@@ -194,6 +204,7 @@ body {
     border-collapse: collapse;
     text-align: center;
     font-family: 'Comic Sans MS', sans-serif;
+    margin: 10px 0;
 }
 
 .high-score-table th,
