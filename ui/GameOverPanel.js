@@ -37,7 +37,6 @@ export function showGameOverPanel(scene) {
             <div class="trophy-container">
                 <img src="assets/trophy.png" id="trophy" class="trophy" alt="Trophy">
             </div>
-            <h3>High Scores</h3>
             <table class="high-score-table">
                 <thead>
                     <tr>

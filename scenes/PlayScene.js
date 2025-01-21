@@ -29,8 +29,27 @@ export default class PlayScene extends Phaser.Scene {
 
     //Create user ID
     generateUserID() {
-        return 'ID-' + Math.floor(1000 + Math.random() * 9000); // Generates a random ID like ID-1234
-    }
+        const adjectives = [
+        'Blazing', 'Flashy', 'Mighty', 'Golden', 
+        'Stellar', 'Heroic', 'Swift', 'Shining', 
+        'Clutch', 'Smooth', 'Diamond', 'Grand',
+        'Wild', 'Epic', 'Power', 'Royal'
+    ];
+    
+    const nouns = [
+        'Bat', 'Glove', 'Arm', 'Eye', 
+        'Cleats', 'Slider', 'Fastball', 'Homer', 
+        'Catch', 'Steal', 'Ace', 'MVP',
+        'Captain', 'Champ', 'Legend', 'Star'
+    ];
+    
+    const numbers = Math.floor(Math.random() * 100);
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    
+    return `${adjective}${noun}${numbers}`;
+    };
+
 
     create() {
         const scaleFactor = calculateScale(this);
@@ -43,8 +62,8 @@ export default class PlayScene extends Phaser.Scene {
         this.gameStarted = false;
 
         //Add the player sprite, shrink collider by 10%
-        const mascotWidth = this.scale.width * 0.25;
-        const mascotHeight = this.scale.height * 0.15;
+        const mascotWidth = this.scale.width * 0.2;
+        const mascotHeight = this.scale.height * 0.1;
         this.player = this.physics.add.sprite(this.scale.width / 4, this.scale.height / 2, 'mascot');
         this.player.setDisplaySize(mascotWidth, mascotHeight);
         this.player.setCollideWorldBounds(true);
