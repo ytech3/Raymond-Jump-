@@ -21,6 +21,8 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
         this.load.image('pause-icon', 'assets/pause_button.png');
+        this.load.image('cloud', 'assets/cloud.png');
+        this.load.image('ground', 'assets/ground.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -55,22 +57,22 @@ export default class PlayScene extends Phaser.Scene {
         const width = scene.scale.width;
         const height = scene.scale.height;
 
-        // Create an offscreen canvas
+        //Create an offscreen canvas
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
 
-        // Get the Canvas 2D context
+        //Get the Canvas 2D context
         const ctx = canvas.getContext('2d');
 
-        // Create a linear gradient & fill
+        //Create a linear gradient & fill
         const gradient = ctx.createLinearGradient(0, 0, 0, height);
         gradient.addColorStop(0, '#092C5C'); // Dark blue
         gradient.addColorStop(1, '#87CEEB'); // Light blue
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
 
-        // Create a Phaser texture from the canvas & add as image
+        //Create a Phaser texture from the canvas & add as image
         scene.textures.addCanvas('gradient-bg', canvas);
         const background = scene.add.image(0, 0, 'gradient-bg');
         background.setOrigin(0, 0).setDepth(-1);
@@ -86,6 +88,49 @@ export default class PlayScene extends Phaser.Scene {
 
         this.physics.pause();
         this.gameStarted = false;
+
+        const groundHeight = 100;
+            this.ground1 = this.add.image(0, this.scale.height - groundHeight, 'ground')
+                .setOrigin(0, 0)
+                .setDepth(-0.4);
+            this.ground2 = this.add.image(this.ground1.width, this.scale.height - groundHeight, 'ground')
+                .setOrigin(0, 0)
+                .setDepth(-0.4)
+                .setFlipX(true);
+
+        //Create clouds
+        this.cloudLayer1 = this.add.group();
+        this.cloudLayer2 = this.add.group();
+
+        const createCloud = (x, y, scale, layer) => {
+            const cloud = this.add.image(x, y, 'cloud');
+            cloud.setScale(scale);
+            cloud.setAlpha(0.9);
+            cloud.setDepth(-0.5);
+            layer.add(cloud);
+        };
+
+        //Cloud spawner for cloudLayer1
+        this.time.addEvent({
+            delay: 500,
+            loop: true,
+            callback: () => {
+                if (this.cloudLayer1.countActive() === 0) {
+                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer1);
+                }
+            },
+        });
+    
+        //Cloud spawner for cloudLayer2
+        this.time.addEvent({
+            delay:700,
+            loop: true,
+            callback: () => {
+                if (this.cloudLayer2.countActive() === 0) {
+                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer2);
+                }
+            },
+        });
 
         //Add the player sprite, shrink collider by 10%
         const mascotWidth = this.scale.width * 0.2;
@@ -171,13 +216,43 @@ export default class PlayScene extends Phaser.Scene {
     }
 
     update() {
+
+        const groundSpeed = 2; // Adjust the speed of ground scrolling
+
+        //Move the ground images
+        this.ground1.x -= groundSpeed;
+        this.ground2.x -= groundSpeed;
+
+        //If ground1 moves off-screen, snap it to the right of ground2
+        if (this.ground1.x + this.ground1.width < 0) {
+            this.ground1.x = this.ground2.x + this.ground2.width;
+        }
+
+        //If ground2 moves off-screen, snap it to the right of ground1
+        if (this.ground2.x + this.ground2.width < 0) {
+            this.ground2.x = this.ground1.x + this.ground1.width;
+        }
         //if game not started, freeze the mascot at its initial position
         if (!this.gameStarted) {
         this.player.setVelocity(0, 0);
         return;
         }
         
+        this.moveClouds(this.cloudLayer1, 0.15);
+        this.moveClouds(this.cloudLayer2, 0.25);
+
         cleanupTubes(this);
+    }
+
+    moveClouds(cloudLayer, speed) {
+        cloudLayer.getChildren().forEach((cloud) => {
+            cloud.x -= speed;
+    
+            //Destroy cloud when it moves off-screen
+            if (cloud.x + cloud.width < 0) {
+                cloud.destroy();
+            }
+        });
     }
 
     restartGame() {
