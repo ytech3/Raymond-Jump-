@@ -51,9 +51,34 @@ export default class PlayScene extends Phaser.Scene {
     return `${adjective}${noun}${numbers}`;
     };
 
+    createGradientBackground(scene) {
+        const width = scene.scale.width;
+        const height = scene.scale.height;
+
+        // Create an offscreen canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        // Get the Canvas 2D context
+        const ctx = canvas.getContext('2d');
+
+        // Create a linear gradient & fill
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, '#092C5C'); // Dark blue
+        gradient.addColorStop(1, '#87CEEB'); // Light blue
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // Create a Phaser texture from the canvas & add as image
+        scene.textures.addCanvas('gradient-bg', canvas);
+        const background = scene.add.image(0, 0, 'gradient-bg');
+        background.setOrigin(0, 0).setDepth(-1);
+    }
 
     create() {
         const scaleFactor = calculateScale(this);
+        this.createGradientBackground(this);
         createHowToPlayOverlay(this);
 
         this.userID = localStorage.getItem('userID') || this.generateUserID();
@@ -156,9 +181,9 @@ export default class PlayScene extends Phaser.Scene {
     }
 
     restartGame() {
-        // Reset game variables
+        //Reset game variables
         this.score = 0;
-        scene.updateScoreText(scene.score);
+        this.updateScoreText(this.score);
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
 

@@ -5,7 +5,7 @@ export function showGameOverPanel(scene) {
     scene.physics.pause();
     scene.tubeSpawner.paused = true;
     scene.hotdogSpawner.paused = true;
-    scene.starSpawner.paused = true;
+    scene.baseballSpawner.paused = true;
 
     //Determine Rewards
     const score = scene.score;
