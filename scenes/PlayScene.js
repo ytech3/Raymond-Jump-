@@ -22,6 +22,7 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('hotdog', 'assets/hot_dog.png');
         this.load.image('pause-icon', 'assets/pause_button.png');
         this.load.image('cloud', 'assets/cloud.png');
+        this.load.image('ground', 'assets/ground.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -88,6 +89,15 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.pause();
         this.gameStarted = false;
 
+        const groundHeight = 100;
+            this.ground1 = this.add.image(0, this.scale.height - groundHeight, 'ground')
+                .setOrigin(0, 0)
+                .setDepth(-0.4);
+            this.ground2 = this.add.image(this.ground1.width, this.scale.height - groundHeight, 'ground')
+                .setOrigin(0, 0)
+                .setDepth(-0.4)
+                .setFlipX(true);
+
         //Create clouds
         this.cloudLayer1 = this.add.group();
         this.cloudLayer2 = this.add.group();
@@ -95,8 +105,8 @@ export default class PlayScene extends Phaser.Scene {
         const createCloud = (x, y, scale, layer) => {
             const cloud = this.add.image(x, y, 'cloud');
             cloud.setScale(scale);
-            cloud.setAlpha(0.9); // Slight transparency for clouds
-            cloud.setDepth(-0.5); // Set depth to appear behind other objects
+            cloud.setAlpha(0.9);
+            cloud.setDepth(-0.5);
             layer.add(cloud);
         };
 
@@ -106,7 +116,7 @@ export default class PlayScene extends Phaser.Scene {
             loop: true,
             callback: () => {
                 if (this.cloudLayer1.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(50, 130), 0.9, this.cloudLayer1);
+                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer1);
                 }
             },
         });
@@ -117,7 +127,7 @@ export default class PlayScene extends Phaser.Scene {
             loop: true,
             callback: () => {
                 if (this.cloudLayer2.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(50, 130), 0.9, this.cloudLayer2);
+                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer2);
                 }
             },
         });
@@ -206,6 +216,22 @@ export default class PlayScene extends Phaser.Scene {
     }
 
     update() {
+
+        const groundSpeed = 2; // Adjust the speed of ground scrolling
+
+        //Move the ground images
+        this.ground1.x -= groundSpeed;
+        this.ground2.x -= groundSpeed;
+
+        //If ground1 moves off-screen, snap it to the right of ground2
+        if (this.ground1.x + this.ground1.width < 0) {
+            this.ground1.x = this.ground2.x + this.ground2.width;
+        }
+
+        //If ground2 moves off-screen, snap it to the right of ground1
+        if (this.ground2.x + this.ground2.width < 0) {
+            this.ground2.x = this.ground1.x + this.ground1.width;
+        }
         //if game not started, freeze the mascot at its initial position
         if (!this.gameStarted) {
         this.player.setVelocity(0, 0);
