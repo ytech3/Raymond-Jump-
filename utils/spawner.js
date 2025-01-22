@@ -9,9 +9,9 @@ export function setupTubeSpawner(scene) {
         paused: true,
     });
 
-    scene.starSpawner = scene.time.addEvent({
+    scene.baseballSpawner = scene.time.addEvent({
         delay: 5000,
-        callback: () => spawnStar(scene),
+        callback: () => spawnBaseball(scene),
         loop: true,
         paused: true,
     });
@@ -65,9 +65,9 @@ export function cleanupTubes(scene) {
         }
     });
 
-    scene.stars.getChildren().forEach((star) => {
-        if (star.x + star.width < 0) {
-            star.destroy();
+    scene.baseballs.getChildren().forEach((baseball) => { // Fixed typo here
+        if (baseball.x + baseball.width < 0) {
+            baseball.destroy();
         }
     });
 
@@ -78,18 +78,18 @@ export function cleanupTubes(scene) {
     });
 }
 
-export function spawnStar(scene) {
+export function spawnBaseball(scene) {
     const scaleFactor = calculateScale(scene);
-    const starSize = 120 * scaleFactor;
+    const baseballSize = 100 * scaleFactor;
 
     //Generate random Y position
     const randomY = Phaser.Math.Between(100, scene.scale.height - 100);
 
-    //Create the star powerup
-    const star = scene.stars.create(scene.scale.width, randomY, 'star');
-    star.setDisplaySize(starSize, starSize);
-    star.body.setVelocityX(-200);
-    star.setOrigin(0.5, 0.5);
+    //Create the baseball powerup
+    const baseball = scene.baseballs.create(scene.scale.width, randomY, 'baseball');
+    baseball.setDisplaySize(baseballSize, baseballSize);
+    baseball.body.setVelocityX(-200);
+    baseball.setOrigin(0.5, 0.5);
 }
 
 export function spawnHotdog(scene) {

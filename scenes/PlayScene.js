@@ -18,7 +18,7 @@ export default class PlayScene extends Phaser.Scene {
     preload() {
         this.load.image('mascot', 'assets/blue_mascot.png');
         this.load.image('tube', 'assets/tube.png');
-        this.load.image('star', 'assets/star.png');
+        this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
@@ -56,7 +56,7 @@ export default class PlayScene extends Phaser.Scene {
         createHowToPlayOverlay(this);
 
         this.userID = localStorage.getItem('userID') || this.generateUserID();
-    localStorage.setItem('userID', this.userID);
+        localStorage.setItem('userID', this.userID);
 
         this.physics.pause();
         this.gameStarted = false;
@@ -73,7 +73,7 @@ export default class PlayScene extends Phaser.Scene {
         //Create tubes and collectibles groups
         this.tubes = this.physics.add.group({ allowGravity: false });
         this.collectibles = this.physics.add.group({ allowGravity: false });
-        this.stars = this.physics.add.group({ allowGravity: false });
+        this.baseballs = this.physics.add.group({ allowGravity: false });
         this.hotdogs = this.physics.add.group({ allowGravity: false });
 
         //Setup spawner and collision
@@ -82,7 +82,7 @@ export default class PlayScene extends Phaser.Scene {
 
         //Initially pause spawners
         this.tubeSpawner.paused = true;
-        this.starSpawner.paused = true;
+        this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;
 
         //Create pause button, set functionality
@@ -115,7 +115,7 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.resume();
 
         this.tubeSpawner.paused = false;
-        this.starSpawner.paused = false;
+        this.baseballSpawner.paused = false;
         this.hotdogSpawner.paused = false;
 
         this.input.on('pointerdown', () => {
@@ -146,7 +146,7 @@ export default class PlayScene extends Phaser.Scene {
 
         //Pause all game mechanics
         this.tubeSpawner.paused = true;
-        this.starSpawner.paused = true;
+        this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;
 
         //Clear existing tubes and collectibles

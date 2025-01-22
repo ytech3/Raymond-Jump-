@@ -19,9 +19,9 @@ export function setupCollision(scene) {
         createPointText(scene, x, y, 50);
     });
 
-    scene.physics.add.overlap(scene.player, scene.stars, (player, star) => {
-        const { x, y } = star;
-        star.destroy();
+    scene.physics.add.overlap(scene.player, scene.baseballs, (player, baseball) => {
+        const { x, y } = baseball;
+        baseball.destroy();
         scene.score += 10;
         scene.scoreText.setText(`Score: ${scene.score}`);
         createPointText(scene, x, y, 10);

@@ -23,7 +23,7 @@ export function createPausePanel(scene) {
         overlay.remove();
         scene.physics.resume();
         scene.tubeSpawner.paused = false;
-        scene.starSpawner.paused = false;
+        scene.baseballSpawner.paused = false;
         scene.hotdogSpawner.paused = false;
         scene.gameStarted = true;
     });
@@ -31,7 +31,7 @@ export function createPausePanel(scene) {
     //Pause the game
     scene.physics.pause();
     scene.hotdogSpawner.paused = true;
-    scene.starSpawner.paused = true;
+    scene.baseballSpawner.paused = true;
     scene.tubeSpawner.paused = true;
     scene.gameStarted = false;
 }
