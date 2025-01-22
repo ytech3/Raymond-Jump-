@@ -18,8 +18,9 @@ export default class PlayScene extends Phaser.Scene {
     preload() {
         this.load.image('mascot', 'assets/blue_mascot.png');
         this.load.image('tube', 'assets/tube.png');
-        this.load.image('star', 'assets/star.png');
+        this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
+        this.load.image('pause-icon', 'assets/pause_button.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -50,13 +51,38 @@ export default class PlayScene extends Phaser.Scene {
     return `${adjective}${noun}${numbers}`;
     };
 
+    createGradientBackground(scene) {
+        const width = scene.scale.width;
+        const height = scene.scale.height;
+
+        // Create an offscreen canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        // Get the Canvas 2D context
+        const ctx = canvas.getContext('2d');
+
+        // Create a linear gradient & fill
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, '#092C5C'); // Dark blue
+        gradient.addColorStop(1, '#87CEEB'); // Light blue
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // Create a Phaser texture from the canvas & add as image
+        scene.textures.addCanvas('gradient-bg', canvas);
+        const background = scene.add.image(0, 0, 'gradient-bg');
+        background.setOrigin(0, 0).setDepth(-1);
+    }
 
     create() {
         const scaleFactor = calculateScale(this);
+        this.createGradientBackground(this);
         createHowToPlayOverlay(this);
 
         this.userID = localStorage.getItem('userID') || this.generateUserID();
-    localStorage.setItem('userID', this.userID);
+        localStorage.setItem('userID', this.userID);
 
         this.physics.pause();
         this.gameStarted = false;
@@ -73,7 +99,7 @@ export default class PlayScene extends Phaser.Scene {
         //Create tubes and collectibles groups
         this.tubes = this.physics.add.group({ allowGravity: false });
         this.collectibles = this.physics.add.group({ allowGravity: false });
-        this.stars = this.physics.add.group({ allowGravity: false });
+        this.baseballs = this.physics.add.group({ allowGravity: false });
         this.hotdogs = this.physics.add.group({ allowGravity: false });
 
         //Setup spawner and collision
@@ -82,31 +108,47 @@ export default class PlayScene extends Phaser.Scene {
 
         //Initially pause spawners
         this.tubeSpawner.paused = true;
-        this.starSpawner.paused = true;
+        this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;
 
         //Create pause button, set functionality
-        const pauseButton = this.add.text(this.scale.width - 10, 10, 'Pause', {
-            fontFamily: 'Comic Sans MS',
-            fontSize: '24px',
-            color: '#FFFFFF',
-            backgroundColor: '#092C5C',
-            padding: { x: 10, y: 5 },
-        })
-            .setOrigin(1, 0)
-            .setInteractive()
-            .on('pointerdown', () => createPausePanel(this));
-        pauseButton.setDepth(10);
+        const pauseButton = this.add.image(this.scale.width - 35, 35, 'pause-icon');
+        pauseButton.setOrigin(1, 0).setInteractive().setDepth(10);
+        pauseButton.setDisplaySize(50, 50);
+        pauseButton.on('pointerdown', () => {
+            createPausePanel(this);
+        });
 
         //Resize listener
-        this.scale.on('resize', resizeGame, this);
+        this.scoreContainer = this.add.container(30, 40);
 
-        //Score text
-        this.scoreText = this.add.text(20, 20, 'Score: 0', {
-            fontSize: '24px',
+        //Create the background and score text
+        const scoreBackground = this.add.rectangle(0, 0, 120, 40, 0x092C5C);
+        scoreBackground.setOrigin(0, 0);
+        this.scoreText = this.add.text(10, 5, 'Score: 0', {
+            fontSize: '22px',
             color: '#F5D130',
+            fontFamily: 'Comic Sans MS',
         });
-        this.scoreText.setDepth(10);
+
+        //Add the background and text to the container
+        this.scoreContainer.add([scoreBackground, this.scoreText]);
+        this.scoreContainer.setDepth(10);
+
+        //Adjust background size based on text
+        this.updateScoreBackground = () => {
+            const textWidth = this.scoreText.width;
+            const textHeight = this.scoreText.height;
+            scoreBackground.width = textWidth + 20;
+            scoreBackground.height = textHeight + 10;
+        };
+        this.updateScoreBackground();
+
+        //Update the score text dynamically
+        this.updateScoreText = (newScore) => {
+            this.scoreText.setText(`Score: ${newScore}`);
+            this.updateScoreBackground();
+        };
     }
     
     startGame() {
@@ -115,7 +157,7 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.resume();
 
         this.tubeSpawner.paused = false;
-        this.starSpawner.paused = false;
+        this.baseballSpawner.paused = false;
         this.hotdogSpawner.paused = false;
 
         this.input.on('pointerdown', () => {
@@ -134,19 +176,20 @@ export default class PlayScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         return;
         }
-
+        
         cleanupTubes(this);
     }
 
     restartGame() {
-        // Reset game variables
+        //Reset game variables
         this.score = 0;
+        this.updateScoreText(this.score);
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
 
         //Pause all game mechanics
         this.tubeSpawner.paused = true;
-        this.starSpawner.paused = true;
+        this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;
 
         //Clear existing tubes and collectibles

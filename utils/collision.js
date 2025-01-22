@@ -15,15 +15,15 @@ export function setupCollision(scene) {
         const { x, y } = collectible;
         collectible.destroy();
         scene.score += 50;
-        scene.scoreText.setText(`Score: ${scene.score}`);
+        scene.updateScoreText(scene.score);
         createPointText(scene, x, y, 50);
     });
 
-    scene.physics.add.overlap(scene.player, scene.stars, (player, star) => {
-        const { x, y } = star;
-        star.destroy();
+    scene.physics.add.overlap(scene.player, scene.baseballs, (player, baseball) => {
+        const { x, y } = baseball;
+        baseball.destroy();
         scene.score += 10;
-        scene.scoreText.setText(`Score: ${scene.score}`);
+        scene.updateScoreText(scene.score);
         createPointText(scene, x, y, 10);
     });
 
@@ -31,7 +31,7 @@ export function setupCollision(scene) {
         const { x, y } = hotdog;
         hotdog.destroy();
         scene.score += 20;
-        scene.scoreText.setText(`Score: ${scene.score}`);
+        scene.updateScoreText(scene.score);
         createPointText(scene, x, y, 20);
     });
 }
