@@ -20,6 +20,7 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('tube', 'assets/tube.png');
         this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
+        this.load.image('pause-icon', 'assets/pause_button.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -86,27 +87,43 @@ export default class PlayScene extends Phaser.Scene {
         this.hotdogSpawner.paused = true;
 
         //Create pause button, set functionality
-        const pauseButton = this.add.text(this.scale.width - 10, 10, 'Pause', {
-            fontFamily: 'Comic Sans MS',
-            fontSize: '24px',
-            color: '#FFFFFF',
-            backgroundColor: '#092C5C',
-            padding: { x: 10, y: 5 },
-        })
-            .setOrigin(1, 0)
-            .setInteractive()
-            .on('pointerdown', () => createPausePanel(this));
-        pauseButton.setDepth(10);
+        const pauseButton = this.add.image(this.scale.width - 35, 35, 'pause-icon');
+        pauseButton.setOrigin(1, 0).setInteractive().setDepth(10);
+        pauseButton.setDisplaySize(50, 50);
+        pauseButton.on('pointerdown', () => {
+            createPausePanel(this);
+        });
 
         //Resize listener
-        this.scale.on('resize', resizeGame, this);
+        this.scoreContainer = this.add.container(30, 40);
 
-        //Score text
-        this.scoreText = this.add.text(20, 20, 'Score: 0', {
-            fontSize: '24px',
+        //Create the background and score text
+        const scoreBackground = this.add.rectangle(0, 0, 120, 40, 0x092C5C);
+        scoreBackground.setOrigin(0, 0);
+        this.scoreText = this.add.text(10, 5, 'Score: 0', {
+            fontSize: '22px',
             color: '#F5D130',
+            fontFamily: 'Comic Sans MS',
         });
-        this.scoreText.setDepth(10);
+
+        //Add the background and text to the container
+        this.scoreContainer.add([scoreBackground, this.scoreText]);
+        this.scoreContainer.setDepth(10);
+
+        //Adjust background size based on text
+        this.updateScoreBackground = () => {
+            const textWidth = this.scoreText.width;
+            const textHeight = this.scoreText.height;
+            scoreBackground.width = textWidth + 20;
+            scoreBackground.height = textHeight + 10;
+        };
+        this.updateScoreBackground();
+
+        //Update the score text dynamically
+        this.updateScoreText = (newScore) => {
+            this.scoreText.setText(`Score: ${newScore}`);
+            this.updateScoreBackground();
+        };
     }
     
     startGame() {
@@ -134,13 +151,14 @@ export default class PlayScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         return;
         }
-
+        
         cleanupTubes(this);
     }
 
     restartGame() {
         // Reset game variables
         this.score = 0;
+        scene.updateScoreText(scene.score);
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
 

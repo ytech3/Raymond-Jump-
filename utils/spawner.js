@@ -31,8 +31,8 @@ export function createTubePair(scene) {
 
     const scaleFactor = calculateScale(scene);
     const gapSize = 550 * scaleFactor;
-    const tubeWidth = scaleFactor * 80;
-    const tubeHeight = scene.scale.height * 0.7;
+    const tubeWidth = scaleFactor * 90;
+    const tubeHeight = scene.scale.height * 0.6;
 
     const minY = 100 * scaleFactor;
     const maxY = scene.scale.height - minY - gapSize;
@@ -42,6 +42,7 @@ export function createTubePair(scene) {
     const topTube = scene.tubes.create(scene.scale.width, gapY, 'tube');
     topTube.setOrigin(0.5, 1);
     topTube.setDisplaySize(tubeWidth, tubeHeight);
+    topTube.setFlipY(true);
     topTube.body.setVelocityX(-200);
 
     //Bottom tube
@@ -80,27 +81,30 @@ export function cleanupTubes(scene) {
 
 export function spawnBaseball(scene) {
     const scaleFactor = calculateScale(scene);
-    const baseballSize = 100 * scaleFactor;
+    const baseballWidth = 120 * scaleFactor;
+    const baseballHeight = 100 * scaleFactor;
+
 
     //Generate random Y position
     const randomY = Phaser.Math.Between(100, scene.scale.height - 100);
 
     //Create the baseball powerup
     const baseball = scene.baseballs.create(scene.scale.width, randomY, 'baseball');
-    baseball.setDisplaySize(baseballSize, baseballSize);
+    baseball.setDisplaySize(baseballWidth, baseballHeight);
     baseball.body.setVelocityX(-200);
     baseball.setOrigin(0.5, 0.5);
 }
 
 export function spawnHotdog(scene) {
     const scaleFactor = calculateScale(scene);
-    const hotdogSize = 120 * scaleFactor;
+    const hotdogWidth = 140 * scaleFactor;
+    const hotdogHeight = 120 * scaleFactor;
 
     const randomY = Phaser.Math.Between(100, scene.scale.height - 100);
 
     //Create the hotdog powerup
     const hotdog = scene.hotdogs.create(scene.scale.width, randomY, 'hotdog');
-    hotdog.setDisplaySize(hotdogSize, hotdogSize);
+    hotdog.setDisplaySize(hotdogWidth, hotdogHeight);
     hotdog.body.setVelocityX(-200);
     hotdog.setOrigin(0.5, 0.5);
 }

@@ -21,6 +21,5 @@ export function resizeGame(gameSize) {
         tube.setScale(scaleFactor);
     });
 
-    this.scoreText.setFontSize(24 * scaleFactor);
-    this.scoreText.setPosition(width / 2, 20);
+    this.scoreContainer.setPosition(20, 20); 
 }
