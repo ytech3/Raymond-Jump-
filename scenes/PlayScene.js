@@ -21,7 +21,7 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
         this.load.image('pause-icon', 'assets/pause_button.png');
-        this.load.image('cloud', 'assets/cloud.png');
+
         this.load.image('ground', 'assets/ground.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
@@ -98,40 +98,6 @@ export default class PlayScene extends Phaser.Scene {
                 .setDepth(-0.4)
                 .setFlipX(true);
 
-        //Create clouds
-        this.cloudLayer1 = this.add.group();
-        this.cloudLayer2 = this.add.group();
-
-        const createCloud = (x, y, scale, layer) => {
-            const cloud = this.add.image(x, y, 'cloud');
-            cloud.setScale(scale);
-            cloud.setAlpha(0.9);
-            cloud.setDepth(-0.5);
-            layer.add(cloud);
-        };
-
-        //Cloud spawner for cloudLayer1
-        this.time.addEvent({
-            delay: 500,
-            loop: true,
-            callback: () => {
-                if (this.cloudLayer1.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer1);
-                }
-            },
-        });
-    
-        //Cloud spawner for cloudLayer2
-        this.time.addEvent({
-            delay:700,
-            loop: true,
-            callback: () => {
-                if (this.cloudLayer2.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer2);
-                }
-            },
-        });
-
         //Add the player sprite, shrink collider by 10%
         const mascotWidth = this.scale.width * 0.2;
         const mascotHeight = this.scale.height * 0.1;
@@ -167,9 +133,7 @@ export default class PlayScene extends Phaser.Scene {
         //Resize listener
         this.scoreContainer = this.add.container(30, 40);
 
-        //Create the background and score text
-        const scoreBackground = this.add.rectangle(0, 0, 120, 40, 0x092C5C);
-        scoreBackground.setOrigin(0, 0);
+        //Create score text
         this.scoreText = this.add.text(10, 5, 'Score: 0', {
             fontSize: '22px',
             color: '#F5D130',
@@ -177,22 +141,13 @@ export default class PlayScene extends Phaser.Scene {
         });
 
         //Add the background and text to the container
-        this.scoreContainer.add([scoreBackground, this.scoreText]);
+        this.scoreContainer.add([this.scoreText]);
         this.scoreContainer.setDepth(10);
 
-        //Adjust background size based on text
-        this.updateScoreBackground = () => {
-            const textWidth = this.scoreText.width;
-            const textHeight = this.scoreText.height;
-            scoreBackground.width = textWidth + 20;
-            scoreBackground.height = textHeight + 10;
-        };
-        this.updateScoreBackground();
 
         //Update the score text dynamically
         this.updateScoreText = (newScore) => {
             this.scoreText.setText(`Score: ${newScore}`);
-            this.updateScoreBackground();
         };
     }
     
@@ -237,22 +192,8 @@ export default class PlayScene extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         return;
         }
-        
-        this.moveClouds(this.cloudLayer1, 0.15);
-        this.moveClouds(this.cloudLayer2, 0.25);
 
         cleanupTubes(this);
-    }
-
-    moveClouds(cloudLayer, speed) {
-        cloudLayer.getChildren().forEach((cloud) => {
-            cloud.x -= speed;
-    
-            //Destroy cloud when it moves off-screen
-            if (cloud.x + cloud.width < 0) {
-                cloud.destroy();
-            }
-        });
     }
 
     restartGame() {
