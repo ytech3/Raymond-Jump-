@@ -22,6 +22,7 @@ export function createPausePanel(scene) {
     resumeButton.addEventListener('click', () => {
         overlay.remove();
         scene.physics.resume();
+        scene.isGroundMoving = true;
         scene.tubeSpawner.paused = false;
         scene.baseballSpawner.paused = false;
         scene.hotdogSpawner.paused = false;
@@ -30,6 +31,7 @@ export function createPausePanel(scene) {
 
     //Pause the game
     scene.physics.pause();
+    scene.isGroundMoving = false;
     scene.hotdogSpawner.paused = true;
     scene.baseballSpawner.paused = true;
     scene.tubeSpawner.paused = true;

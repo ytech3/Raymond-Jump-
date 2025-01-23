@@ -97,6 +97,7 @@ export default class PlayScene extends Phaser.Scene {
                 .setOrigin(0, 0)
                 .setDepth(-0.4)
                 .setFlipX(true);
+        this.IsGroundMoving = false;
 
         //Add the player sprite, shrink collider by 10%
         const mascotWidth = this.scale.width * 0.2;
@@ -140,10 +141,9 @@ export default class PlayScene extends Phaser.Scene {
             fontFamily: 'Comic Sans MS',
         });
 
-        //Add the background and text to the container
+        //Add text to the container
         this.scoreContainer.add([this.scoreText]);
         this.scoreContainer.setDepth(10);
-
 
         //Update the score text dynamically
         this.updateScoreText = (newScore) => {
@@ -156,6 +156,7 @@ export default class PlayScene extends Phaser.Scene {
         this.player.body.allowGravity = true;
         this.physics.resume();
 
+        this.isGroundMoving = true; 
         this.tubeSpawner.paused = false;
         this.baseballSpawner.paused = false;
         this.hotdogSpawner.paused = false;
@@ -172,21 +173,24 @@ export default class PlayScene extends Phaser.Scene {
 
     update() {
 
-        const groundSpeed = 2; // Adjust the speed of ground scrolling
+        const groundSpeed = 1.5;
 
-        //Move the ground images
-        this.ground1.x -= groundSpeed;
-        this.ground2.x -= groundSpeed;
+        if (this.isGroundMoving) {
+            //Move the ground images
+            this.ground1.x -= groundSpeed;
+            this.ground2.x -= groundSpeed;
 
-        //If ground1 moves off-screen, snap it to the right of ground2
-        if (this.ground1.x + this.ground1.width < 0) {
-            this.ground1.x = this.ground2.x + this.ground2.width;
+            //If ground1 moves off-screen, snap it to the right of ground2
+            if (this.ground1.x + this.ground1.width < 0) {
+                this.ground1.x = this.ground2.x + this.ground2.width;
+            }
+
+            //If ground2 moves off-screen, snap it to the right of ground1
+            if (this.ground2.x + this.ground2.width < 0) {
+                this.ground2.x = this.ground1.x + this.ground1.width;
+            }
         }
 
-        //If ground2 moves off-screen, snap it to the right of ground1
-        if (this.ground2.x + this.ground2.width < 0) {
-            this.ground2.x = this.ground1.x + this.ground1.width;
-        }
         //if game not started, freeze the mascot at its initial position
         if (!this.gameStarted) {
         this.player.setVelocity(0, 0);
@@ -204,6 +208,7 @@ export default class PlayScene extends Phaser.Scene {
         this.gameStarted = false;
 
         //Pause all game mechanics
+        this.isGroundMoving = false;
         this.tubeSpawner.paused = true;
         this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;

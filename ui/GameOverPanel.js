@@ -3,6 +3,7 @@ import { updateHighScores } from '../utils/scoreManager.js';
 export function showGameOverPanel(scene) {
     //Pause the game
     scene.physics.pause();
+    scene.isGroundMoving = false;
     scene.tubeSpawner.paused = true;
     scene.hotdogSpawner.paused = true;
     scene.baseballSpawner.paused = true;
