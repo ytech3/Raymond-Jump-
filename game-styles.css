@@ -53,9 +53,12 @@ body {
     border: 8px solid #092C5C
 }
 
-.content-box h1 {
-    color: #092C5C;
+.content-box h1,
+.game-over-panel h1 {
+    color: white;
     font-size: 38px;
+    font-family: "Libre Baskerville", serif;
+    -webkit-text-stroke: 1px #092C5C;
 }
 
 .content-box p {

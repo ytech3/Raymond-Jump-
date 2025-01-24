@@ -16,7 +16,15 @@ export function setupCollision(scene) {
         collectible.destroy();
         scene.score += 50;
         scene.updateScoreText(scene.score);
+        scene.speedMultiplier += 0.025;
+        const newGapSize = scene.gapSize * 0.995;
+        scene.gapSize = Math.max(newGapSize, 150);
         createPointText(scene, x, y, 50);
+
+        //Restarts spawners with updated speedMultiplyer
+        scene.tubeSpawner.delay = 3500 / scene.speedMultiplier;
+        scene.baseballSpawner.delay = 5000 / scene.speedMultiplier;
+        scene.hotdogSpawner.delay = 8000 / scene.speedMultiplier;
     });
 
     scene.physics.add.overlap(scene.player, scene.baseballs, (player, baseball) => {

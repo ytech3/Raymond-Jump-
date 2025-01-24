@@ -89,6 +89,10 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.pause();
         this.gameStarted = false;
 
+        //Difficulty scaling
+        this.speedMultiplier = 1;
+        this.gapSize = 550 * scaleFactor;
+
         const groundHeight = 100;
             this.ground1 = this.add.image(0, this.scale.height - groundHeight, 'ground')
                 .setOrigin(0, 0)
@@ -206,6 +210,7 @@ export default class PlayScene extends Phaser.Scene {
         this.updateScoreText(this.score);
         this.scoreText.setText('Score: 0');
         this.gameStarted = false;
+        this.speedMultiplier = 1;
 
         //Pause all game mechanics
         this.isGroundMoving = false;
