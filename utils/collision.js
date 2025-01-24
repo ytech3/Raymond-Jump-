@@ -17,15 +17,24 @@ export function setupCollision(scene) {
         scene.score += 50;
         scene.updateScoreText(scene.score);
         scene.updateLogoTracker(scene.collectedLogos + 1);
+        createPointText(scene, x, y, 50);
+
+        //Increase speed and decrease gap size
         scene.speedMultiplier += 0.025;
         const newGapSize = scene.gapSize * 0.995;
         scene.gapSize = Math.max(newGapSize, 150);
-        createPointText(scene, x, y, 50);
 
         //Restarts spawners with updated speedMultiplyer
         scene.tubeSpawner.delay = 3500 / scene.speedMultiplier;
         scene.baseballSpawner.delay = 5000 / scene.speedMultiplier;
         scene.hotdogSpawner.delay = 8000 / scene.speedMultiplier;
+
+        scene.scheduleIndex++;
+        
+        //Logo detection
+        if (scene.collectedLogos >= scene.totalLogos) {
+            scene.endGameWithTrophy();
+        }
     });
 
     scene.physics.add.overlap(scene.player, scene.baseballs, (player, baseball) => {

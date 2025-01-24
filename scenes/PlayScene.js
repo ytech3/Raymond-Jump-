@@ -13,6 +13,7 @@ export default class PlayScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PlayScene' });
         this.score = 0;
+        this.trophyCollected = false;
     }
 
     preload() {
@@ -21,8 +22,8 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
         this.load.image('pause-icon', 'assets/pause_button.png');
-
         this.load.image('ground', 'assets/ground.png');
+        this.load.image('trophy', 'assets/trophy.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -76,6 +77,32 @@ export default class PlayScene extends Phaser.Scene {
         scene.textures.addCanvas('gradient-bg', canvas);
         const background = scene.add.image(0, 0, 'gradient-bg');
         background.setOrigin(0, 0).setDepth(-1);
+    }
+
+    endGameWithTrophy() {
+        // Stop all spawners
+        this.tubeSpawner.paused = true;
+        this.baseballSpawner.paused = true;
+        this.hotdogSpawner.paused = true;
+    
+        // Spawn the final trophy at the far right
+        const trophy = this.physics.add.sprite(
+            this.scale.width + 100, // Start just off-screen
+            this.scale.height / 2, // Center vertically
+            'trophy'         // Trophy image key
+        );
+
+        trophy.setDisplaySize(250, 250); // Adjust size of the trophy
+        trophy.body.setVelocityX(-200); // Make it move left
+        trophy.body.allowGravity = false;
+        trophy.setOrigin(0.5, 0.5);
+    
+        // Add collision detection for the trophy
+        this.physics.add.overlap(this.player, trophy, () => {
+            trophy.destroy();
+            this.trophyCollected = true;
+            showGameOverPanel(this);
+        });
     }
 
     create() {
@@ -213,8 +240,12 @@ export default class PlayScene extends Phaser.Scene {
 
         //if game not started, freeze the mascot at its initial position
         if (!this.gameStarted) {
-        this.player.setVelocity(0, 0);
-        return;
+            this.player.setVelocity(0, 0);
+            return;
+        }
+
+        if (this.collectedLogos < this.totalLogos) {
+            cleanupTubes(this);
         }
 
         cleanupTubes(this);
@@ -224,7 +255,10 @@ export default class PlayScene extends Phaser.Scene {
         //Reset game variables
         this.score = 0;
         this.updateScoreText(this.score);
-        this.scoreText.setText('Score: 0');
+        //this.scoreText.setText('Score: 0');
+        this.collectedLogos = 0;
+        this.logoTrackerText.setText(`Logos: 0/${this.totalLogos}`);
+        this.trophyCollected = false;
         this.gameStarted = false;
         this.speedMultiplier = 1;
 

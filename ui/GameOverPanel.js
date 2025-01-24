@@ -92,7 +92,7 @@ export function showGameOverPanel(scene) {
             clearInterval(scoreInterval);
 
             //If all teams collected, brighten trophy
-            if (scene.scheduleIndex === 0){
+            if (scene.trophyCollected) {
                 triggerMedalAnimation(trophy);
             }
         }
