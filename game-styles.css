@@ -36,15 +36,22 @@ body {
     z-index: 10;
 }
 
+.rays-logo {
+    max-width: 120px;
+    margin: 0 auto 5px;
+    display: block;
+}
+
 .content-box,
 .game-over-panel {
-    background-color: #FFFFFF;
+    background-color: #87CEEB;
     max-width: 800px;
     max-height: 600px;
     box-sizing: border-box;
     padding: 20px;
     border-radius: 10px;
     text-align: center;
+    border: 8px solid #092C5C
 }
 
 .content-box h1 {
@@ -54,11 +61,11 @@ body {
 }
 
 .content-box p {
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     color: #092C5C;
     line-height: 1.5;
     text-align: center;
-    font-size: 22px;
+    font-size: 16px;
 }
 
 .content-box input[type="checkbox"] {
@@ -70,22 +77,24 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .checkbox-container label {
-    margin: 0;
-    font-size: 22px;
+    margin: 10px;
+    font-size: 16px;
     color: #092C5C;
 }
 
 .start-button,
 .resume-button,
 .game-over-play-again {
-    margin-bottom: 20px;
-    width: 100%;
-    background-color: #092C5C;
-    color: #F5D130;
+    margin-bottom: 10px;
+    width: 50%;
+    font-weight: bold;
+    background-color: #F5D130;
+    color: #092C5C;
+    border: 4px solid #092C5C;
     font-size: 20px;
     padding: 10px 20px;
     border: none;
@@ -112,29 +121,24 @@ body {
     cursor: not-allowed;
 }
 
-.start-button:not(:disabled):hover {
-    background-color: #4A90E2;
-}
-
 /* Legal links container */
 .legal-links-container {
-    margin-top: 10px;
+    margin-top: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
     margin-bottom: 0 auto 15px;
     width: 95%;
-    background-color: #092C5C;
     padding: 10px;
     border-radius: 10px;
 }
 
 /* Legal link buttons */
 .legal-link {
-    background-color: #092C5C;
-    color: #F5D130;
-    border: 2px solid #F5D130;
+    background-color: #F5D130;
+    color: #092C5C;
+    border: 4px solid #092C5C;
     border-radius: 5px;
     padding: 5px 40px;
     font-size: 18px;
@@ -144,9 +148,11 @@ body {
 }
 
 .legal-link:hover,
-.legal-link:active {
-    background-color: #F5D130;
-    color: #092C5C;
+.legal-link:active,
+.start-button:not(:disabled):hover,
+.start-button:active {
+    background-color: #092C5C;
+    color: #F5D130;
 }
 
 .score-text {
@@ -242,7 +248,7 @@ body {
     }
 
     .start-button {
-        margin-bottom: 15px;
+        margin-bottom: 5px;
         font-size: 14px;
     }
 
@@ -250,29 +256,28 @@ body {
         max-width: 90%;
         max-height: 90%;
         font-size: 14px;
-        padding: 20px;
+        padding: 10px;
     }
 
     .content-box h1 {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .content-box p,
     .checkbox-container label, {
-        font-size: 16px;
+        font-size: 20px;
     }
 
     .legal-links-container {
         width: 95%;
-        gap: 10px;
-        padding: 10px;
+        gap: 7px;
+        padding: 5px;
         margin-top: 10px;
     }
 
-
     .legal-link {
         gap: 5px;
-        padding: 5px 10px;
+        padding: 5px 5px;
         font-size: 12px;
     }
 }
@@ -280,7 +285,7 @@ body {
 /* Medium Screens */
 @media (min-width: 601px) and (max-width: 1024px) {
     .start-button {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         font-size: 16px;
     }
 
