@@ -6,6 +6,34 @@ export function createPausePanel(scene) {
     overlay.innerHTML = `
         <div class="content-box">
             <h1>PAUSED</h1>
+
+            <!-- Collectible Logo Section -->
+            <div class="info-row">
+                <img src="assets/astros.png" alt="Team Logo" class="info-image">
+                <div class="info-text-container">
+                    <p class="info-text">Team logo</p>
+                    <p class="info-text">+50 points</p>
+                </div>
+            </div>
+
+            <!-- Hotdog Section -->
+            <div class="info-row">
+                <img src="assets/hot_dog.png" alt="Hotdog" class="info-image">
+                <div class="info-text-container">
+                    <p class="info-text">Hotdog</p>
+                    <p class="info-text">+20 points</p>
+                </div>
+            </div>
+
+            <!-- Baseball Section -->
+            <div class="info-row">
+                <img src="assets/baseball.png" alt="Baseball" class="info-image">
+                <div class="info-text-container">
+                    <p class="info-text">Baseball</p>
+                    <p class="info-text">+10 points</p>
+                </div>
+            </div>
+
             <button class="resume-button">Resume</button>
             <div class="legal-links-container">
                 <button class="legal-link" onclick="window.open('https://www.mlb.com/rays/official-information/contact')">Support</button>

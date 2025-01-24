@@ -4,7 +4,7 @@ export function createHowToPlayOverlay(scene) {
 
     overlay.innerHTML = `
         <div class="content-box">
-        <img src="assets/rays.png" alt="Rays Logo" class="rays-logo">
+            <img src="assets/rays.png" alt="Rays Logo" class="rays-logo">
             <h1>HOW TO PLAY</h1>
             <p>Tap the screen to make Raymond fly</p>
             <p>Pickup items for bonus points </p>
