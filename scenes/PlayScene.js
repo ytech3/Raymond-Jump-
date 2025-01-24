@@ -89,6 +89,10 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.pause();
         this.gameStarted = false;
 
+        //Total logos
+        this.totalLogos = gameSchedule.reduce((sum, game) => sum + game.games, 0); // Sum up all games
+        this.collectedLogos = 0;
+
         //Difficulty scaling
         this.speedMultiplier = 1;
         this.gapSize = 550 * scaleFactor;
@@ -145,13 +149,25 @@ export default class PlayScene extends Phaser.Scene {
             fontFamily: 'Comic Sans MS',
         });
 
+        //Logo amount tracker
+        this.logoTrackerText = this.add.text(10, 30, `Logos: 0/${this.totalLogos}`, {
+            fontSize: '22px',
+            color: '#F5D130',
+            fontFamily: 'Comic Sans MS',
+        });
+
         //Add text to the container
-        this.scoreContainer.add([this.scoreText]);
+        this.scoreContainer.add([this.scoreText, this.logoTrackerText]);
         this.scoreContainer.setDepth(10);
 
-        //Update the score text dynamically
+        //Update the score and logo text dynamically
         this.updateScoreText = (newScore) => {
             this.scoreText.setText(`Score: ${newScore}`);
+        };
+
+        this.updateLogoTracker = (collected) => {
+            this.collectedLogos = collected;
+            this.logoTrackerText.setText(`Logos: ${this.collectedLogos}/${this.totalLogos}`);
         };
     }
     

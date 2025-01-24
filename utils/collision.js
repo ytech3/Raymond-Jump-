@@ -16,6 +16,7 @@ export function setupCollision(scene) {
         collectible.destroy();
         scene.score += 50;
         scene.updateScoreText(scene.score);
+        scene.updateLogoTracker(scene.collectedLogos + 1);
         scene.speedMultiplier += 0.025;
         const newGapSize = scene.gapSize * 0.995;
         scene.gapSize = Math.max(newGapSize, 150);
