@@ -13,6 +13,7 @@ export default class PlayScene extends Phaser.Scene {
     constructor() {
         super({ key: 'PlayScene' });
         this.score = 0;
+        this.trophyCollected = false;
     }
 
     preload() {
@@ -21,8 +22,8 @@ export default class PlayScene extends Phaser.Scene {
         this.load.image('baseball', 'assets/baseball.png');
         this.load.image('hotdog', 'assets/hot_dog.png');
         this.load.image('pause-icon', 'assets/pause_button.png');
-        this.load.image('cloud', 'assets/cloud.png');
         this.load.image('ground', 'assets/ground.png');
+        this.load.image('trophy', 'assets/trophy.png');
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
@@ -78,6 +79,32 @@ export default class PlayScene extends Phaser.Scene {
         background.setOrigin(0, 0).setDepth(-1);
     }
 
+    endGameWithTrophy() {
+        // Stop all spawners
+        this.tubeSpawner.paused = true;
+        this.baseballSpawner.paused = true;
+        this.hotdogSpawner.paused = true;
+    
+        // Spawn the final trophy at the far right
+        const trophy = this.physics.add.sprite(
+            this.scale.width + 100, // Start just off-screen
+            this.scale.height / 2, // Center vertically
+            'trophy'         // Trophy image key
+        );
+
+        trophy.setDisplaySize(250, 250); // Adjust size of the trophy
+        trophy.body.setVelocityX(-200); // Make it move left
+        trophy.body.allowGravity = false;
+        trophy.setOrigin(0.5, 0.5);
+    
+        // Add collision detection for the trophy
+        this.physics.add.overlap(this.player, trophy, () => {
+            trophy.destroy();
+            this.trophyCollected = true;
+            showGameOverPanel(this);
+        });
+    }
+
     create() {
         const scaleFactor = calculateScale(this);
         this.createGradientBackground(this);
@@ -89,6 +116,14 @@ export default class PlayScene extends Phaser.Scene {
         this.physics.pause();
         this.gameStarted = false;
 
+        //Total logos
+        this.totalLogos = gameSchedule.reduce((sum, game) => sum + game.games, 0); // Sum up all games
+        this.collectedLogos = 0;
+
+        //Difficulty scaling
+        this.speedMultiplier = 1;
+        this.gapSize = 550 * scaleFactor;
+
         const groundHeight = 100;
             this.ground1 = this.add.image(0, this.scale.height - groundHeight, 'ground')
                 .setOrigin(0, 0)
@@ -97,40 +132,7 @@ export default class PlayScene extends Phaser.Scene {
                 .setOrigin(0, 0)
                 .setDepth(-0.4)
                 .setFlipX(true);
-
-        //Create clouds
-        this.cloudLayer1 = this.add.group();
-        this.cloudLayer2 = this.add.group();
-
-        const createCloud = (x, y, scale, layer) => {
-            const cloud = this.add.image(x, y, 'cloud');
-            cloud.setScale(scale);
-            cloud.setAlpha(0.9);
-            cloud.setDepth(-0.5);
-            layer.add(cloud);
-        };
-
-        //Cloud spawner for cloudLayer1
-        this.time.addEvent({
-            delay: 500,
-            loop: true,
-            callback: () => {
-                if (this.cloudLayer1.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer1);
-                }
-            },
-        });
-    
-        //Cloud spawner for cloudLayer2
-        this.time.addEvent({
-            delay:700,
-            loop: true,
-            callback: () => {
-                if (this.cloudLayer2.countActive() === 0) {
-                    createCloud(this.scale.width, Phaser.Math.Between(30, 80), 0.9, this.cloudLayer2);
-                }
-            },
-        });
+        this.IsGroundMoving = false;
 
         //Add the player sprite, shrink collider by 10%
         const mascotWidth = this.scale.width * 0.2;
@@ -167,32 +169,32 @@ export default class PlayScene extends Phaser.Scene {
         //Resize listener
         this.scoreContainer = this.add.container(30, 40);
 
-        //Create the background and score text
-        const scoreBackground = this.add.rectangle(0, 0, 120, 40, 0x092C5C);
-        scoreBackground.setOrigin(0, 0);
+        //Create score text
         this.scoreText = this.add.text(10, 5, 'Score: 0', {
             fontSize: '22px',
             color: '#F5D130',
             fontFamily: 'Comic Sans MS',
         });
 
-        //Add the background and text to the container
-        this.scoreContainer.add([scoreBackground, this.scoreText]);
+        //Logo amount tracker
+        this.logoTrackerText = this.add.text(10, 30, `Logos: 0/${this.totalLogos}`, {
+            fontSize: '22px',
+            color: '#F5D130',
+            fontFamily: 'Comic Sans MS',
+        });
+
+        //Add text to the container
+        this.scoreContainer.add([this.scoreText, this.logoTrackerText]);
         this.scoreContainer.setDepth(10);
 
-        //Adjust background size based on text
-        this.updateScoreBackground = () => {
-            const textWidth = this.scoreText.width;
-            const textHeight = this.scoreText.height;
-            scoreBackground.width = textWidth + 20;
-            scoreBackground.height = textHeight + 10;
-        };
-        this.updateScoreBackground();
-
-        //Update the score text dynamically
+        //Update the score and logo text dynamically
         this.updateScoreText = (newScore) => {
             this.scoreText.setText(`Score: ${newScore}`);
-            this.updateScoreBackground();
+        };
+
+        this.updateLogoTracker = (collected) => {
+            this.collectedLogos = collected;
+            this.logoTrackerText.setText(`Logos: ${this.collectedLogos}/${this.totalLogos}`);
         };
     }
     
@@ -201,6 +203,7 @@ export default class PlayScene extends Phaser.Scene {
         this.player.body.allowGravity = true;
         this.physics.resume();
 
+        this.isGroundMoving = true; 
         this.tubeSpawner.paused = false;
         this.baseballSpawner.paused = false;
         this.hotdogSpawner.paused = false;
@@ -217,52 +220,50 @@ export default class PlayScene extends Phaser.Scene {
 
     update() {
 
-        const groundSpeed = 2; // Adjust the speed of ground scrolling
+        const groundSpeed = 1.5;
 
-        //Move the ground images
-        this.ground1.x -= groundSpeed;
-        this.ground2.x -= groundSpeed;
+        if (this.isGroundMoving) {
+            //Move the ground images
+            this.ground1.x -= groundSpeed;
+            this.ground2.x -= groundSpeed;
 
-        //If ground1 moves off-screen, snap it to the right of ground2
-        if (this.ground1.x + this.ground1.width < 0) {
-            this.ground1.x = this.ground2.x + this.ground2.width;
+            //If ground1 moves off-screen, snap it to the right of ground2
+            if (this.ground1.x + this.ground1.width < 0) {
+                this.ground1.x = this.ground2.x + this.ground2.width;
+            }
+
+            //If ground2 moves off-screen, snap it to the right of ground1
+            if (this.ground2.x + this.ground2.width < 0) {
+                this.ground2.x = this.ground1.x + this.ground1.width;
+            }
         }
 
-        //If ground2 moves off-screen, snap it to the right of ground1
-        if (this.ground2.x + this.ground2.width < 0) {
-            this.ground2.x = this.ground1.x + this.ground1.width;
-        }
         //if game not started, freeze the mascot at its initial position
         if (!this.gameStarted) {
-        this.player.setVelocity(0, 0);
-        return;
+            this.player.setVelocity(0, 0);
+            return;
         }
-        
-        this.moveClouds(this.cloudLayer1, 0.15);
-        this.moveClouds(this.cloudLayer2, 0.25);
+
+        if (this.collectedLogos < this.totalLogos) {
+            cleanupTubes(this);
+        }
 
         cleanupTubes(this);
-    }
-
-    moveClouds(cloudLayer, speed) {
-        cloudLayer.getChildren().forEach((cloud) => {
-            cloud.x -= speed;
-    
-            //Destroy cloud when it moves off-screen
-            if (cloud.x + cloud.width < 0) {
-                cloud.destroy();
-            }
-        });
     }
 
     restartGame() {
         //Reset game variables
         this.score = 0;
         this.updateScoreText(this.score);
-        this.scoreText.setText('Score: 0');
+        //this.scoreText.setText('Score: 0');
+        this.collectedLogos = 0;
+        this.logoTrackerText.setText(`Logos: 0/${this.totalLogos}`);
+        this.trophyCollected = false;
         this.gameStarted = false;
+        this.speedMultiplier = 1;
 
         //Pause all game mechanics
+        this.isGroundMoving = false;
         this.tubeSpawner.paused = true;
         this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;

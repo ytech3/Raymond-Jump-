@@ -3,6 +3,7 @@ import { updateHighScores } from '../utils/scoreManager.js';
 export function showGameOverPanel(scene) {
     //Pause the game
     scene.physics.pause();
+    scene.isGroundMoving = false;
     scene.tubeSpawner.paused = true;
     scene.hotdogSpawner.paused = true;
     scene.baseballSpawner.paused = true;
@@ -12,14 +13,16 @@ export function showGameOverPanel(scene) {
     const allTeamsCollected = scene.scheduleIndex === 0;
     const highScores = updateHighScores(scene.userID, scene.score);
 
-    const tableRows = highScores.map(
-        (entry, index) => `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${entry.userID}</td>
-            <td>${entry.score}</td>
-        </tr>`
-    ).join('');
+    const isUserOnLeaderboard = highScores.some(entry => entry.userID === scene.userID && entry.score === scene.score);
+
+    const tableRows = highScores.map((entry, index) => {
+        const isCurrentUserHighScore = entry.userID === scene.userID && entry.score === scene.score;
+        return `
+            <tr class="${isCurrentUserHighScore ? 'highlight-row' : ''}">
+                <td>${entry.userID}</td>
+                <td>${entry.score}</td>
+            </tr>`;
+    }).join('');
 
     //Game Over panel
     const overlay = document.createElement('div');
@@ -27,12 +30,12 @@ export function showGameOverPanel(scene) {
 
     overlay.innerHTML = `
         <div class="game-over-panel">
-            <h2>Game Over!</h2>
-            <p>Your Score: <span id="animated-score">0</span></p>
+            <h1>GAME OVER</h1>
+            <p>Total score: <span id="animated-score">0</span></p>
             <div class="medal-container">
-                <img src="assets/bronze.png" id="bronze-medal" class="medal" alt="Bronze Medal">
-                <img src="assets/silver.png" id="silver-medal" class="medal" alt="Silver Medal">
                 <img src="assets/gold.png" id="gold-medal" class="medal" alt="Gold Medal">
+                <img src="assets/silver.png" id="silver-medal" class="medal" alt="Silver Medal">
+                <img src="assets/bronze.png" id="bronze-medal" class="medal" alt="Bronze Medal">
             </div>
             <div class="trophy-container">
                 <img src="assets/trophy.png" id="trophy" class="trophy" alt="Trophy">
@@ -40,7 +43,6 @@ export function showGameOverPanel(scene) {
             <table class="high-score-table">
                 <thead>
                     <tr>
-                        <th>#</th>
                         <th>ID</th>
                         <th>Score</th>
                     </tr>
@@ -77,7 +79,7 @@ export function showGameOverPanel(scene) {
             animatedScore.textContent = Math.min(currentScore, scene.score);
 
             //Handle Medal Animations
-            if (currentScore >= 0 && !bronzeMedal.classList.contains('bright')) {
+            if (currentScore >= 50 && !bronzeMedal.classList.contains('bright')) {
                 triggerMedalAnimation(bronzeMedal);
             }
             if (currentScore >= 3500 && !silverMedal.classList.contains('bright')) {
@@ -90,7 +92,7 @@ export function showGameOverPanel(scene) {
             clearInterval(scoreInterval);
 
             //If all teams collected, brighten trophy
-            if (scene.scheduleIndex === 0){
+            if (scene.trophyCollected) {
                 triggerMedalAnimation(trophy);
             }
         }
