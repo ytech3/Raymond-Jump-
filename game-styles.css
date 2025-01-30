@@ -258,12 +258,10 @@ body {
     opacity: 1;
 }
 
-.medal.animated,
 .trophy.animated {
     transform: scale(1.5) rotate(10deg);
     animation: shake 0.6s ease;
 }
-
 
 .high-score-table {
     width: 100%;
@@ -388,7 +386,7 @@ body {
     }
 
     .content-box p,
-    .checkbox-container label, {
+    .checkbox-container label {
         font-size: 16px;
     }
 
