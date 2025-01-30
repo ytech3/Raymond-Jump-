@@ -87,6 +87,18 @@ body {
     color: #092C5C;
 }
 
+.bonus-points {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.bonus-icon {
+    width: 100px;
+    height: auto;
+}
+
 .start-button,
 .resume-button,
 .game-over-play-again {
@@ -333,6 +345,14 @@ body {
         padding: 5px 5px;
         font-size: 12px;
     }
+
+    .bonus-points {
+        gap: 5px;
+    }
+
+    .bonus-icon {
+        width: 50px;
+    }
 }
 
 /* Medium Screens */
@@ -370,6 +390,15 @@ body {
     .content-box p,
     .checkbox-container label, {
         font-size: 16px;
+    }
+
+    .bonus-points {
+        gap: 10px;
+    }
+
+    .bonus-icon {
+        width: 75px;
+        height: auto;
     }
 }
 

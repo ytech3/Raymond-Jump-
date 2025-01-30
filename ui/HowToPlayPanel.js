@@ -7,7 +7,11 @@ export function createHowToPlayOverlay(scene) {
             <img src="assets/rays.png" alt="Rays Logo" class="rays-logo">
             <h1>HOW TO PLAY</h1>
             <p>Tap the screen to make Raymond fly</p>
-            <p>Pickup items for bonus points </p>
+            <p class="bonus-points">
+                <img src="assets/baseball.png" alt="Bonus Item" class="bonus-icon">
+                Pickup items for bonus points
+                <img src="assets/hot_dog.png" alt="Bonus Item" class="bonus-icon">
+            </p>
             <p>Collect all team logos to win the trophy!</p>
             <div class="checkbox-container">
                 <input type="checkbox" id="agreeCheckbox">
