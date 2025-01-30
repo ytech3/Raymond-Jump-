@@ -1,3 +1,7 @@
+/*
+ Defines the full season schedule for Tampa Rays.
+ getTeamSchedule() converts this structured list into a flat array where each occurrence of a team represents a single game.
+ */
 export const gameSchedule = [
     { team: 'rockies', games: 3 },
     { team: 'pirates', games: 3 },
@@ -53,6 +57,11 @@ export const gameSchedule = [
     { team: 'bluejays', games: 3 },
 ];
 
+/*
+ Generates a flattened list of games.
+ For each team, adds their name to the `schedule` array multiple times based on the `games` value.
+ Returns a full list where each entry represents a single game.
+ */
 export function getTeamSchedule() {
     const schedule = [];
     gameSchedule.forEach(({ team, games }) => {

@@ -1,6 +1,19 @@
+/*
+ Spawner and obstacle management for the game.
+ Controls spawning of tubes and power-ups (baseballs & hotdogs).
+ Ensures collectibles do not overlap when appearing on the screen.
+ Cleans up objects that move off-screen to optimize performance.
+ */
+
 import { calculateScale } from './scaling.js';
 import { getNextCollectibleTeam } from './collectibles.js';
 
+/*
+ Creates timers for spawning obstacles and collectibles.
+ Tubes spawn every 3.5 seconds.
+ Baseball power-ups spawn every 5 seconds.
+ Hotdog power-ups spawn every 8 seconds.
+ */
 export function setupTubeSpawner(scene) {
     scene.tubeSpawner = scene.time.addEvent({
         delay: 3500 / scene.speedMultiplier,
@@ -24,6 +37,11 @@ export function setupTubeSpawner(scene) {
     });
 }
 
+/*
+ Creates a pair of tubes with a collectible in between.
+ Randomizes the vertical position of the gap while keeping it within limits.
+ Assigns velocity to move tubes from right to left.
+ */
 export function createTubePair(scene) {
     if (!scene.gameStarted) {
         return;
@@ -61,6 +79,9 @@ export function createTubePair(scene) {
     //console.log(`Current Gap Size: ${scene.gapSize}`);
 }
 
+/*
+ Cleans up tubes, baseballs, or hotdogs that have moved off-screen.
+ */
 export function cleanupTubes(scene) {
     scene.tubes.getChildren().forEach((tube) => {
         if (tube.x + tube.width < 0) {
@@ -81,6 +102,11 @@ export function cleanupTubes(scene) {
     });
 }
 
+/*
+ Variables to track the last spawn positions of power-ups
+ Spawns a baseball & hotdog power-up at a random Y position.
+ Ensures it does not overlap with one another.
+ */
 let lastBaseballY = null;
 let lastHotdogY = null;
 const minSeparation = 100;

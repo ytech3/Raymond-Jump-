@@ -1,3 +1,6 @@
+/*
+ Determines a consistent scale factor based on screen size.
+ */
 export function calculateScale(scene) {
     const baseWidth = 800;
     const baseHeight = 600;
@@ -8,6 +11,12 @@ export function calculateScale(scene) {
     return Math.min(scaleX, scaleY);
 }
 
+/*
+ Adjusts game elements when the game window is resized.
+ Rescales the player and repositions it.
+ Updates all tubes' sizes to match the new scale.
+ Ensures the score container remains in a fixed position.
+ */
 export function resizeGame(gameSize) {
     const width = gameSize.width;
     const height = gameSize.height;

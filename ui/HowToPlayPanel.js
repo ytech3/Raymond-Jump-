@@ -1,3 +1,10 @@
+/*
+ Creates and displays the "How to Play" overlay at the start of the game.
+ Provides instructions, displays images and text for bonus items.
+ Requires the player to agree to the game rules before starting.
+ Includes legal links for additional information.
+ */
+
 export function createHowToPlayOverlay(scene) {
     const overlay = document.createElement('div');
     overlay.classList.add('how-to-play-overlay');
@@ -31,6 +38,7 @@ export function createHowToPlayOverlay(scene) {
     const checkbox = overlay.querySelector('#agreeCheckbox');
     const startButton = overlay.querySelector('.start-button');
 
+    //Enables start button only if checkbox checked
     checkbox.addEventListener('change', () => {
         startButton.disabled = !checkbox.checked;
     });

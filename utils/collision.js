@@ -1,3 +1,10 @@
+/*
+ Handles all collision detection in the game.
+ Detects when the player collides with tubes and ends the game.
+ Detects when the player collects power-ups
+ Updates the score and applies game progression mechanics.
+ */
+
 import { showGameOverPanel } from '../ui/GameOverPanel.js';
 import { createPointText } from '../utils/pointDisplay.js';
 
@@ -37,6 +44,7 @@ export function setupCollision(scene) {
         }
     });
 
+    //Powerup collections
     scene.physics.add.overlap(scene.player, scene.baseballs, (player, baseball) => {
         const { x, y } = baseball;
         baseball.destroy();

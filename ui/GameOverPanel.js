@@ -1,3 +1,11 @@
+/*
+ Displays the Game Over panel when the player loses.
+ Pauses the game and stops all movement.
+ Displays the final score with an animated counter. Awards medals and a trophy based on the player's performance.
+ Shows a leaderboard with the top scores. Provides a "Play Again" button to restart.
+ Includes legal links for additional information.
+ */
+
 import { updateHighScores } from '../utils/scoreManager.js';
 
 export function showGameOverPanel(scene) {
@@ -106,9 +114,14 @@ export function showGameOverPanel(scene) {
     });
 }
 
+/*
+ Adds animation effects to medals and trophies.
+ Makes the element brighter.
+ Adds a temporary animation effect. Removes the animation class after 1 second.
+ */
 function triggerMedalAnimation(medal) {
     medal.classList.add('bright', 'animated');
     setTimeout(() => {
         medal.classList.remove('animated');
-    }, 1000); // Animation duration
+    }, 1000);
 }

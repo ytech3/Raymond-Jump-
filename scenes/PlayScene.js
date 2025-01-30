@@ -1,3 +1,11 @@
+/*
+ The main game scene for "Raymond Jump".
+ Loads assets.Creates the game environment.
+ Handles player interactions. Spawns obstacles and collectibles.
+ Tracks scores and progression.
+ Managing game start, pause, and restart functionality.
+ */
+
 import { calculateScale, resizeGame } from '../utils/scaling.js';
 import { setupTubeSpawner, createTubePair, cleanupTubes } from '../utils/spawner.js';
 import { setupCollision } from '../utils/collision.js';
@@ -27,11 +35,11 @@ export default class PlayScene extends Phaser.Scene {
 
         const uniqueTeams = [...new Set(gameSchedule.map(({ team }) => team))];
         uniqueTeams.forEach(team => {
-            this.load.image(team, `assets/${team}.png`); // Load dynamically
+            this.load.image(team, `assets/${team}.png`);
         });
     }
 
-    //Create user ID
+    //Generates unique userID for score tracking
     generateUserID() {
         const adjectives = [
         'Blazing', 'Flashy', 'Mighty', 'Golden', 
@@ -79,25 +87,23 @@ export default class PlayScene extends Phaser.Scene {
         background.setOrigin(0, 0).setDepth(-1);
     }
 
+    //Spawns final trophy to end game after all logos are collected
     endGameWithTrophy() {
-        // Stop all spawners
         this.tubeSpawner.paused = true;
         this.baseballSpawner.paused = true;
         this.hotdogSpawner.paused = true;
     
-        // Spawn the final trophy at the far right
         const trophy = this.physics.add.sprite(
-            this.scale.width + 100, // Start just off-screen
-            this.scale.height / 2, // Center vertically
-            'trophy'         // Trophy image key
+            this.scale.width + 100,
+            this.scale.height / 2,
+            'trophy'
         );
 
-        trophy.setDisplaySize(250, 250); // Adjust size of the trophy
-        trophy.body.setVelocityX(-200); // Make it move left
+        trophy.setDisplaySize(250, 250);
+        trophy.body.setVelocityX(-200);
         trophy.body.allowGravity = false;
         trophy.setOrigin(0.5, 0.5);
     
-        // Add collision detection for the trophy
         this.physics.add.overlap(this.player, trophy, () => {
             trophy.destroy();
             this.trophyCollected = true;
@@ -105,6 +111,7 @@ export default class PlayScene extends Phaser.Scene {
         });
     }
 
+    //Initializes game scene, main area
     create() {
         const scaleFactor = calculateScale(this);
         this.createGradientBackground(this);
@@ -255,7 +262,6 @@ export default class PlayScene extends Phaser.Scene {
         //Reset game variables
         this.score = 0;
         this.updateScoreText(this.score);
-        //this.scoreText.setText('Score: 0');
         this.collectedLogos = 0;
         this.logoTrackerText.setText(`Logos: 0/${this.totalLogos}`);
         this.trophyCollected = false;
