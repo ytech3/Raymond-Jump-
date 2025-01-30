@@ -1,3 +1,10 @@
+/*
+ Creates and displays the pause panel in the game.
+ Displays point values for collectibles (logos, hotdogs, baseballs).
+ Provides legal links for users.
+ Includes a "Resume" button to continue the game.
+ */
+
 export function createPausePanel(scene) {
     const overlay = document.createElement('div');
     overlay.classList.add('pause-overlay');

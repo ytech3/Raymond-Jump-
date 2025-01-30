@@ -4,7 +4,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #092C5C; /* Navy blue background */
+    background-color: #092C5C;
 }
 
 #game-container {
@@ -85,6 +85,18 @@ body {
     margin: 10px;
     font-size: 16px;
     color: #092C5C;
+}
+
+.bonus-points {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.bonus-icon {
+    width: 100px;
+    height: auto;
 }
 
 .start-button,
@@ -174,9 +186,9 @@ body {
 .info-image {
     max-width: 75px;
     height: auto;
-    margin-right: 10px; /* Space between image and text */
+    margin-right: 10px;/
     border-radius: 5px;
-    padding: 5px; /* Optional padding for visual spacing */
+    padding: 5px;
 }
 
 .info-text {
@@ -188,10 +200,10 @@ body {
 
 .info-text-container {
     display: flex;
-    flex-direction: column; /* Stack text vertically */
-    justify-content: center; /* Center text vertically relative to the image */
-    align-items: flex-start; /* Align text to the left inside the container */
-    gap: 5px; /* Stack text vertically */
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 5px;
 }
 
 /*Medals*/
@@ -246,12 +258,10 @@ body {
     opacity: 1;
 }
 
-.medal.animated,
 .trophy.animated {
     transform: scale(1.5) rotate(10deg);
     animation: shake 0.6s ease;
 }
-
 
 .high-score-table {
     width: 100%;
@@ -333,13 +343,21 @@ body {
         padding: 5px 5px;
         font-size: 12px;
     }
+
+    .bonus-points {
+        gap: 5px;
+    }
+
+    .bonus-icon {
+        width: 50px;
+    }
 }
 
 /* Medium Screens */
 @media (min-width: 601px) and (max-width: 1024px) {
     .start-button {
         margin-bottom: 10px;
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .content-box,
@@ -368,8 +386,17 @@ body {
     }
 
     .content-box p,
-    .checkbox-container label, {
-        font-size: 16px;
+    .checkbox-container label {
+        font-size: 20px;
+    }
+
+    .bonus-points {
+        gap: 10px;
+    }
+
+    .bonus-icon {
+        width: 75px;
+        height: auto;
     }
 }
 

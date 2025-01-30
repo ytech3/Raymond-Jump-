@@ -1,3 +1,10 @@
+/*
+ Creates and displays the "How to Play" overlay at the start of the game.
+ Provides instructions, displays images and text for bonus items.
+ Requires the player to agree to the game rules before starting.
+ Includes legal links for additional information.
+ */
+
 export function createHowToPlayOverlay(scene) {
     const overlay = document.createElement('div');
     overlay.classList.add('how-to-play-overlay');
@@ -7,7 +14,11 @@ export function createHowToPlayOverlay(scene) {
             <img src="assets/rays.png" alt="Rays Logo" class="rays-logo">
             <h1>HOW TO PLAY</h1>
             <p>Tap the screen to make Raymond fly</p>
-            <p>Pickup items for bonus points </p>
+            <p class="bonus-points">
+                <img src="assets/baseball.png" alt="Bonus Item" class="bonus-icon">
+                Pickup items for bonus points
+                <img src="assets/hot_dog.png" alt="Bonus Item" class="bonus-icon">
+            </p>
             <p>Collect all team logos to win the trophy!</p>
             <div class="checkbox-container">
                 <input type="checkbox" id="agreeCheckbox">
@@ -27,6 +38,7 @@ export function createHowToPlayOverlay(scene) {
     const checkbox = overlay.querySelector('#agreeCheckbox');
     const startButton = overlay.querySelector('.start-button');
 
+    //Enables start button only if checkbox checked
     checkbox.addEventListener('change', () => {
         startButton.disabled = !checkbox.checked;
     });
