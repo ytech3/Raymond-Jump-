@@ -4,7 +4,7 @@ import { createPointText } from '../utils/pointDisplay.js';
 export function setupCollision(scene) {
     //Collision between player and tubes
     scene.physics.add.overlap(scene.player, scene.tubes, () => {
-        console.log('Collision detected!');
+        //console.log('Collision detected!');
         scene.gameStarted = false;
         scene.physics.pause();
         showGameOverPanel(scene);

@@ -33,9 +33,9 @@ export function createTubePair(scene) {
     const tubeWidth = scaleFactor * 90;
     const tubeHeight = scene.scale.height * 0.6;
 
-    const minY = 100 * scaleFactor;
-    const maxY = scene.scale.height - minY - scene.gapSize;
-    const gapY = Phaser.Math.Between(minY, maxY);
+    const minGapY = scene.scale.height * 0.15;
+    const maxGapY = scene.scale.height * 0.6;
+    const gapY = Phaser.Math.Between(minGapY, maxGapY);
 
     const tubeVelocity = -200 * scene.speedMultiplier;
 
@@ -58,8 +58,7 @@ export function createTubePair(scene) {
     collectible.setDisplaySize(250 * scaleFactor, 250 * scaleFactor);
     collectible.body.setVelocityX(tubeVelocity);
     collectible.setOrigin(0.5, 0.5);
-    console.log(`Current Gap Size: ${scene.gapSize}`);
-    
+    //console.log(`Current Gap Size: ${scene.gapSize}`);
 }
 
 export function cleanupTubes(scene) {
@@ -69,7 +68,7 @@ export function cleanupTubes(scene) {
         }
     });
 
-    scene.baseballs.getChildren().forEach((baseball) => { // Fixed typo here
+    scene.baseballs.getChildren().forEach((baseball) => {
         if (baseball.x + baseball.width < 0) {
             baseball.destroy();
         }
@@ -82,13 +81,22 @@ export function cleanupTubes(scene) {
     });
 }
 
+let lastBaseballY = null;
+let lastHotdogY = null;
+const minSeparation = 100;
+
 export function spawnBaseball(scene) {
     const scaleFactor = calculateScale(scene);
     const baseballWidth = 120 * scaleFactor;
     const baseballHeight = 100 * scaleFactor;
 
-    //Generate random Y position
-    const randomY = Phaser.Math.Between(100, scene.scale.height - 100);
+    let randomY;
+
+    do {
+        randomY = Phaser.Math.Between(100, scene.scale.height - 100);
+    } while (lastHotdogY && Math.abs(randomY - lastHotdogY) < minSeparation);
+
+    lastBaseballY = randomY;
 
     //Create the baseball powerup
     const baseball = scene.baseballs.create(scene.scale.width, randomY, 'baseball');
@@ -102,7 +110,13 @@ export function spawnHotdog(scene) {
     const hotdogWidth = 140 * scaleFactor;
     const hotdogHeight = 120 * scaleFactor;
 
-    const randomY = Phaser.Math.Between(100, scene.scale.height - 100);
+    let randomY;
+
+    do {
+        randomY = Phaser.Math.Between(100, scene.scale.height - 100);
+    } while (lastBaseballY && Math.abs(randomY - lastBaseballY) < minSeparation);
+
+    lastHotdogY = randomY;
 
     //Create the hotdog powerup
     const hotdog = scene.hotdogs.create(scene.scale.width, randomY, 'hotdog');
