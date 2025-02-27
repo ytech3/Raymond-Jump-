@@ -62,8 +62,8 @@ export function showGameOverPanel(scene) {
             <button class="game-over-play-again">Play Again</button>
             <div class="legal-links-container">
                 <button class="legal-link" onclick="window.open('https://www.mlb.com/rays/official-information/contact')">Support</button>
-                <button class="legal-link" onclick="window.open('https://www.mlb.com/official-information/terms-of-use')">MLB TOU</button>
-                <button class="legal-link" onclick="window.open('https://www.mlb.com/official-information/privacy-policy')">MLB Privacy Policy</button>
+                <button class="legal-link" onclick="window.open('https://www.mlb.com/app/ballpark/official-information/terms-of-use')">MLB TOU</button>
+                <button class="legal-link" onclick="window.open('https://www.mlb.com/app/ballpark/official-information/privacy-policy')">MLB Privacy Policy</button>
             </div>
         </div>
     `;
