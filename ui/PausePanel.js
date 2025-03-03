@@ -43,7 +43,7 @@ export function createPausePanel(scene) {
 
             <button class="resume-button">Resume</button>
             <div class="legal-links-container">
-                <button class="legal-link" onclick="window.open('https://www.mlb.com/rays/official-information/contact')">Support</button>
+                <button class="legal-link" onclick="window.open('https://www.mlb.com/app/ballpark/rays/official-information/contact')">Support</button>
                 <button class="legal-link" onclick="window.open('https://www.mlb.com/app/ballpark/official-information/terms-of-use')">MLB TOU</button>
                 <button class="legal-link" onclick="window.open('https://www.mlb.com/app/ballpark/official-information/privacy-policy')">MLB Privacy Policy</button>
             </div>
